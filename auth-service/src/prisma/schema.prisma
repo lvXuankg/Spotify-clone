@@ -8,387 +8,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Action {
-  id             BigInt              @id @default(autoincrement())
-  user_id        BigInt
-  reference_id   BigInt
-  reference_type reference_type
-  content        String?
-  status         action_status       @default(show)
-  action         content_action_type
-  reason         String?
-  created_at     DateTime            @default(now()) @db.Timestamptz(6)
-  User           User                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, reference_id, reference_type, action])
-  @@index([reference_id, reference_type], map: "action_polymorphic_idx")
+model password_reset_tokens {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  token      String    @db.VarChar(255)
+  expires_at DateTime  @db.Timestamptz(6)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model ActionUsers {
-  user_id                               BigInt
-  target_user_id                        BigInt
-  time_action                           DateTime         @default(now()) @db.Timestamptz(6)
-  action_types                          user_action_type
-  content                               String?
-  User_ActionUsers_target_user_idToUser User             @relation("ActionUsers_target_user_idToUser", fields: [target_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User_ActionUsers_user_idToUser        User             @relation("ActionUsers_user_idToUser", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([user_id, target_user_id, action_types])
+model refresh_tokens {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String
+  expires_at DateTime  @db.Timestamptz(6)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  is_revoked Boolean?  @default(false)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model Badges {
-  id           BigInt      @id @default(autoincrement())
-  icon_url     String?     @db.VarChar(512)
-  name         String      @unique @db.VarChar(255)
-  description  String?
-  badge_number Int?
-  UserBadge    UserBadge[]
-}
+model user_liked_artists {
+  user_id    String    @db.Uuid
+  artist_id  String    @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-model Blog {
-  id                  BigInt        @id @default(autoincrement())
-  author_id           BigInt?
-  title               String        @db.VarChar(255)
-  description         String?
-  thumbnail           String?       @db.VarChar(512)
-  prefer_by_admin     Boolean       @default(false)
-  content             Json?
-  youtube_link        String?       @db.VarChar(512)
-  tags                String[]
-  best_practice_links String[]
-  created_at          DateTime      @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime      @default(now()) @db.Timestamptz(6)
-  User                User?         @relation(fields: [author_id], references: [id], onUpdate: NoAction)
-  BlogHistory         BlogHistory[]
-  BlogSquad           BlogSquad[]
-}
-
-model BlogHistory {
-  id        BigInt   @id @default(autoincrement())
-  blog_id   BigInt
-  version   Int
-  content   Json?
-  update_at DateTime @default(now()) @db.Timestamptz(6)
-  Blog      Blog     @relation(fields: [blog_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([blog_id, version])
-}
-
-model BlogSquad {
-  blog_id  BigInt
-  squad_id BigInt
-  Blog     Blog   @relation(fields: [blog_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  Squad    Squad  @relation(fields: [squad_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([blog_id, squad_id])
-}
-
-model Bookmark {
-  id             BigInt         @id @default(autoincrement())
-  user_id        BigInt
-  reference_id   BigInt
-  reference_type reference_type
-  created_at     DateTime       @default(now()) @db.Timestamptz(6)
-  User           User           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, reference_id, reference_type])
-  @@index([reference_id, reference_type], map: "bookmark_polymorphic_idx")
-}
-
-model LoginHistory {
-  id             BigInt      @id @default(autoincrement())
-  user_device_id BigInt?
-  login_time     DateTime    @default(now()) @db.Timestamptz(6)
-  logout_time    DateTime?   @db.Timestamptz(6)
-  address        String?     @db.VarChar(255)
-  UserDevice     UserDevice? @relation(fields: [user_device_id], references: [id], onUpdate: NoAction)
-}
-
-model Meanings {
-  id             BigInt           @id @default(autoincrement())
-  word_id        BigInt
-  part_of_speech part_of_speech
-  definition     String
-  example        String?          @db.VarChar(255)
-  Word           Word             @relation(fields: [word_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  UserVocabulary UserVocabulary[]
-}
-
-model Notification {
-  id             BigInt   @id @default(autoincrement())
-  user_id        BigInt
-  type           String   @db.VarChar(50)
-  reference_id   BigInt
-  reference_type String   @db.VarChar(50)
-  content        String?
-  read           Boolean  @default(false)
-  created_at     DateTime @default(now()) @db.Timestamptz(6)
-  User           User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([reference_id, reference_type], map: "notification_polymorphic_idx")
-}
-
-model Series {
-  id              BigInt   @id @default(autoincrement())
-  title           String   @db.VarChar(255)
-  description     String?
-  tags            String[]
-  director        String?  @db.VarChar(255)
-  actors          String[]
-  duration        Int?
-  country         String?  @db.VarChar(100)
-  imdb            String?  @db.VarChar(20)
-  year            Int?     @db.SmallInt
-  keyword         String?  @db.VarChar(255)
-  notification_id BigInt?
-  created_at      DateTime @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime @default(now()) @db.Timestamptz(6)
-  Video           Video[]
+  @@id([user_id, artist_id])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model Squad {
-  id              BigInt        @id @default(autoincrement())
-  title           String        @db.VarChar(255)
-  description     String?
-  logo            String?       @db.VarChar(512)
-  background      String?       @db.VarChar(512)
-  level           Int?          @db.SmallInt
-  parent_squad_id BigInt?
-  raw_title       String?       @unique @db.VarChar(255)
-  created_at      DateTime      @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime      @default(now()) @db.Timestamptz(6)
-  BlogSquad       BlogSquad[]
-  Squad           Squad?        @relation("SquadToSquad", fields: [parent_squad_id], references: [id], onUpdate: NoAction)
-  other_Squad     Squad[]       @relation("SquadToSquad")
-  SquadMember     SquadMember[]
-}
-
-model SquadMember {
-  id        BigInt     @id @default(autoincrement())
-  user_id   BigInt
-  squad_id  BigInt
-  role      squad_role @default(member)
-  joined_at DateTime   @default(now()) @db.Timestamptz(6)
-  Squad     Squad      @relation(fields: [squad_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User      User       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, squad_id])
-}
-
-model Tree {
-  id              BigInt        @id @default(autoincrement())
-  user_id         BigInt        @unique
-  level           Int           @default(1)
-  progress        Int           @default(0)
-  last_watered_at DateTime?     @db.Timestamptz(6)
-  created_at      DateTime      @default(now()) @db.Timestamptz(6)
-  User            User          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  WaterAction     WaterAction[]
-}
-
-model User {
-  id                                           BigInt           @id @default(autoincrement())
-  name                                         String?          @db.VarChar(255)
-  username                                     String           @unique @db.VarChar(100)
-  password                                     String           @db.VarChar(255)
-  email                                        String           @unique @db.VarChar(255)
-  point                                        Int              @default(0)
-  role                                         user_role        @default(member)
-  bio                                          String?
-  avatar_url                                   String?          @db.VarChar(512)
-  facebook_url                                 String?          @db.VarChar(512)
-  zalo_phone                                   String?          @db.VarChar(20)
-  water_count                                  Int              @default(0)
-  careers                                      String?          @db.VarChar(255)
-  created_at                                   DateTime         @default(now()) @db.Timestamptz(6)
-  updated_at                                   DateTime         @default(now()) @db.Timestamptz(6)
-  Action                                       Action[]
-  ActionUsers_ActionUsers_target_user_idToUser ActionUsers[]    @relation("ActionUsers_target_user_idToUser")
-  ActionUsers_ActionUsers_user_idToUser        ActionUsers[]    @relation("ActionUsers_user_idToUser")
-  Blog                                         Blog[]
-  Bookmark                                     Bookmark[]
-  Notification                                 Notification[]
-  SquadMember                                  SquadMember[]
-  Tree                                         Tree?
-  UserBadge                                    UserBadge[]
-  UserDevice                                   UserDevice[]
-  UserVocabulary                               UserVocabulary[]
-  VideoProgress                                VideoProgress[]
-  WaterAction_WaterAction_target_user_idToUser WaterAction[]    @relation("WaterAction_target_user_idToUser")
-  WaterAction_WaterAction_user_idToUser        WaterAction[]    @relation("WaterAction_user_idToUser")
-  refreshtoken                                 refreshtoken[]
-}
-
-model UserBadge {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt
-  badge_id   BigInt
-  achived_at DateTime @default(now()) @db.Timestamptz(6)
-  Badges     Badges   @relation(fields: [badge_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, badge_id])
-}
-
-model UserDevice {
-  id                   BigInt         @id @default(autoincrement())
-  user_id              BigInt
-  ip_address           String?        @db.Inet
-  device               String?
-  status               device_status  @default(using)
-  hashed_refresh_token String?
-  created_at           DateTime       @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime       @default(now()) @db.Timestamptz(6)
-  LoginHistory         LoginHistory[]
-  User                 User           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model UserVocabulary {
-  user_id            BigInt
-  meaning_id         BigInt
-  level_master       Int              @default(1) @db.SmallInt
-  latest_practice_at DateTime?        @db.Timestamptz(6)
-  latest_status      practice_status?
-  number_practices   Int              @default(0)
-  Meanings           Meanings         @relation(fields: [meaning_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User               User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([user_id, meaning_id])
-}
-
-model Video {
-  id              BigInt            @id @default(autoincrement())
-  serie_id        BigInt
-  title           String            @db.VarChar(255)
-  episode_order   Int?
-  video_url       String            @db.VarChar(512)
-  duration        Int               @default(0)
-  created_at      DateTime          @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime          @default(now()) @db.Timestamptz(6)
-  Series          Series            @relation(fields: [serie_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  VideoProgress   VideoProgress[]
-  VideoTranscript VideoTranscript[]
-}
-
-model VideoProgress {
-  id            BigInt  @id @default(autoincrement())
-  user_id       BigInt
-  video_id      BigInt
-  last_position Float   @default(0)
-  completed     Boolean @default(false)
-  User          User    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  Video         Video   @relation(fields: [video_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([user_id, video_id])
-}
-
-model VideoTranscript {
-  id         BigInt @id @default(autoincrement())
-  video_id   BigInt
-  start_time Float
-  end_time   Float
-  text       String
-  Video      Video  @relation(fields: [video_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([video_id], map: "transcript_video_id_idx")
-}
-
-model WaterAction {
-  id                                    BigInt            @id @default(autoincrement())
-  user_id                               BigInt
-  target_user_id                        BigInt
-  tree_id                               BigInt
-  type                                  water_action_type
-  amount                                Int               @default(1)
-  created_at                            DateTime          @default(now()) @db.Timestamptz(6)
-  User_WaterAction_target_user_idToUser User              @relation("WaterAction_target_user_idToUser", fields: [target_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  Tree                                  Tree              @relation(fields: [tree_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User_WaterAction_user_idToUser        User              @relation("WaterAction_user_idToUser", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-model Word {
-  id            BigInt     @id @default(autoincrement())
-  term          String     @db.VarChar(255)
-  pronunciation String?    @db.VarChar(100)
-  audio_url     String?    @db.VarChar(512)
-  created_at    DateTime   @default(now()) @db.Timestamptz(6)
-  Meanings      Meanings[]
-}
-
-model refreshtoken {
-  id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  hashed_refresh_token String   @unique
-  user_id              BigInt
-  expires_at           DateTime @db.Timestamptz(6)
-  created_at           DateTime @default(now()) @db.Timestamptz(6)
-  User                 User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([user_id], map: "refresh_tokens_user_id_idx")
-}
-
-enum action_status {
-  show
-  deleted
-}
-
-enum content_action_type {
-  upvote
-  downvote
-  report
-  block
-}
-
-enum device_status {
-  using
-  deleted
-  blocked
-}
-
-enum part_of_speech {
-  noun
-  verb
-  adjective
-  adverb
-  pronoun
-  preposition
-  conjunction
-  interjection
-  other
-}
-
-enum practice_status {
-  Wrong
-  Right
-}
-
-enum reference_type {
-  Video
-  Series
-  Blog
-}
-
-enum squad_role {
-  member
-  admin
-  mod
-}
-
-enum user_action_type {
-  follow
-  block
-  report
-}
-
-enum user_role {
-  member
-  memberVip
-  admin
-}
-
-enum water_action_type {
-  self
-  friend
+model users {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username              String                  @unique @db.VarChar(50)
+  email                 String                  @unique @db.VarChar(255)
+  password_hash         String                  @db.VarChar(255)
+  role                  String?                 @default("MEMBER") @db.VarChar(20)
+  bio                   String?
+  avatar_url            String?
+  facebook_url          String?
+  zalo_phone            String?                 @db.VarChar(20)
+  description           String?
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  password_reset_tokens password_reset_tokens[]
+  refresh_tokens        refresh_tokens[]
+  user_liked_artists    user_liked_artists[]
 }

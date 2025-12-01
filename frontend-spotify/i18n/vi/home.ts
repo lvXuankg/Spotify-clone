@@ -1,0 +1,37 @@
+export const home = {
+  "Made for": "Tạo cho",
+  "New releases": "Phát hành mới",
+  ALL: "Tất cả",
+  PODCASTS: "Podcast",
+  "Made for you": "Tạo cho bạn",
+  you: "cho bạn",
+  "Liked Songs": "Bài hát yêu thích",
+  Artists: "Nghệ sĩ",
+  MUSIC: "Âm nhạc",
+  SONGS: "Bài hát",
+  ALBUMS: "Album",
+  PLAYLISTS: "Danh sách phát",
+  ARTISTS: "Nghệ sĩ",
+  TRACKS: "Bài hát",
+  Preview: "Xem trước",
+  "Log In": "Đăng nhập",
+  "Not now": "Không phải bây giờ",
+  Trending: "Xu hướng",
+  "Your playlists": "Danh sách phát của bạn",
+  "Featured Charts": "Bảng xếp hạng nổi bật",
+  "Start listening with a free Spotify account":
+    "Bắt đầu nghe bằng tài khoản Spotify miễn phí",
+  "You're logged out": "Bạn đã đăng xuất",
+  "Log in to add this to your Liked Songs.":
+    "Đăng nhập để thêm vào Bài hát yêu thích của bạn.",
+  "Create a playlist": "Tạo danh sách phát",
+  "Log in to create and share playlists.":
+    "Đăng nhập để tạo và chia sẻ danh sách phát.",
+  [`Let's access your library`]: `Hãy truy cập thư viện của bạn`,
+  "Log In to access all the features of the app":
+    "Đăng nhập để truy cập tất cả các tính năng của ứng dụng",
+  "Your top mixes": "Mix hàng đầu của bạn",
+  "Recently played": "Phát gần đây",
+  "Featured playlists": "Danh sách phát nổi bật",
+  "Popular playlists": "Danh sách phát phổ biến",
+};

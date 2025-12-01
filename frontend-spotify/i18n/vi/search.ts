@@ -1,0 +1,18 @@
+export const search = {
+  "Top Result": "Kết quả hàng đầu",
+  Songs: "Bài hát",
+  Song: "Bài hát",
+  Albums: "Album",
+  Album: "Album",
+  Artists: "Nghệ sĩ",
+  Artist: "Nghệ sĩ",
+  By: "Bởi",
+  "Browse all": "Duyệt tất cả",
+  Playlists: "Danh sách phát",
+  "Clear recent searches": "Xóa tìm kiếm gần đây",
+  "Recent Searches": "Tìm kiếm gần đây",
+  // 'No results': 'No results',
+  // 'No results where found for': 'No results where found for',
+  "No results": "Không tìm thấy kết quả",
+  "No results where found for": "Không tìm thấy kết quả cho",
+};

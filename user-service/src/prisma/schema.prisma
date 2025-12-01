@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model password_reset_tokens {
@@ -50,6 +51,7 @@ model users {
   description           String?
   created_at            DateTime?               @default(now()) @db.Timestamptz(6)
   updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  name                  String?                 @db.VarChar(255)
   password_reset_tokens password_reset_tokens[]
   refresh_tokens        refresh_tokens[]
   user_liked_artists    user_liked_artists[]

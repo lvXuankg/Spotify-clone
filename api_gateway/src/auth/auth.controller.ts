@@ -75,6 +75,7 @@ export class AuthController {
     @Body() data: LoginDto,
     @Res({ passthrough: true }) res: Response, // cho phép vừa set cookie vừa trả về kết quả
   ) {
+    console.log(data);
     const result = await this.authService.login(data);
 
     const { access_token, refresh_token } = result;

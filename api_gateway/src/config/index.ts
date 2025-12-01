@@ -1,3 +1,5 @@
+export { getCorsConfig } from './cors.config';
+
 export interface AppConfig {
   authService: AuthRabbitMQ;
   userService: UserRabbitMQ;

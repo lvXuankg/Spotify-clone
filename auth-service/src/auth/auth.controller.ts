@@ -39,7 +39,7 @@ export class AuthController {
    */
   @MessagePattern(AUTH_MESSAGE_PATTERNS.REFRESH_TOKEN)
   async refreshToken(@Payload() payload: { refreshToken: string; userId: string }) {
-    return this.authService.refreshToken(payload.refreshToken, BigInt(payload.userId));
+    return this.authService.refreshToken(payload.refreshToken, payload.userId);
   }
 
   /**
@@ -71,7 +71,7 @@ export class AuthController {
    */
   @MessagePattern(AUTH_MESSAGE_PATTERNS.LOGOUT)
   async logout(@Payload() payload: { refreshToken: string; userId: string }) {
-    return this.authService.logout(payload.refreshToken, BigInt(payload.userId));
+    return this.authService.logout(payload.refreshToken, payload.userId);
   }
 
   /**
@@ -79,6 +79,6 @@ export class AuthController {
    */
   @MessagePattern(AUTH_MESSAGE_PATTERNS.LOGOUT_ALL_DEVICES)
   async logoutAllDevices(@Payload() payload: { userId: string }) {
-    return this.authService.logoutAllDevices(BigInt(payload.userId));
+    return this.authService.logoutAllDevices(payload.userId);
   }
 }

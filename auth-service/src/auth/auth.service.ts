@@ -5,9 +5,9 @@ import * as crypto from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 import { errorHandling } from 'src/common/constants/error-handling';
 import { LoginDto } from './dto/login.dto';
-import { User } from '../../generated/prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { responseMessages } from 'src/common/constants/response-message';
+import type { users } from 'src/common/types/prisma.types';
 
 export interface JwtPayload {
   sub: string;
@@ -25,14 +25,14 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.users.findUnique({
       where: {
         email,
       },
     });
 
-    if (user && user.password && (await bcrypt.compare(password, user.password))) {
-      const { password: _, ...result } = user;
+    if (user && user.password_hash && (await bcrypt.compare(password, user.password_hash))) {
+      const { password_hash: _, ...result } = user;
       return result;
     }
 
@@ -43,15 +43,28 @@ export class AuthService {
     return `${prefix}${Date.now()}`;
   }
 
-  private async generateRefreshToken(userId: bigint): Promise<string> {
+  private async generateUniqueUsername(prefix = 'user', maxRetries = 5): Promise<string> {
+    for (let i = 0; i < maxRetries; i++) {
+      const username = this.generateUsername(prefix);
+      const existing = await this.prisma.users.count({
+        where: { username },
+      });
+      if (existing === 0) {
+        return username;
+      }
+    }
+    throw new ConflictException('Unable to generate unique username');
+  }
+
+  private async generateRefreshToken(userId: string): Promise<string> {
     const token = crypto.randomBytes(32).toString('hex');
     const hashedToken = await bcrypt.hash(token, 10);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-    await this.prisma.refreshtoken.create({
+    await this.prisma.refresh_tokens.create({
       data: {
-        hashed_refresh_token: hashedToken,
+        token_hash: hashedToken,
         user_id: userId,
         expires_at: expiresAt,
       },
@@ -63,47 +76,27 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { email, password } = registerDto;
 
-    const existingEmail = await this.prisma.user.findFirst({
-      where: {
-        email,
-      },
+    const existingEmail = await this.prisma.users.findUnique({
+      where: { email },
     });
 
     if (existingEmail) {
       throw new ConflictException(errorHandling.duplicateEmail.message);
     }
 
-    let generatedUsername = this.generateUsername();
-    let retryCount = 3;
-
-    while (
-      retryCount > 0 &&
-      (await this.prisma.user.findFirst({ where: { username: generatedUsername } }))
-    ) {
-      generatedUsername = this.generateUsername();
-      retryCount--;
-    }
-
-    const stillExists = await this.prisma.user.findUnique({
-      where: { username: generatedUsername },
-    });
-
-    if (stillExists) {
-      throw new ConflictException('Hệ thống đang bận, vui lòng thử lại sau');
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
+    const username = await this.generateUniqueUsername();
 
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.users.create({
       data: {
         email,
-        password: hashedPassword,
-        username: generatedUsername,
-        role: 'member',
+        password_hash: hashedPassword,
+        username,
+        role: 'MEMBER',
       },
     });
 
-    const { password: _, ...result } = user;
+    const { password_hash: _, ...result } = user;
     return result;
   }
 
@@ -117,8 +110,8 @@ export class AuthService {
     return this.login(user);
   }
 
-  async login(user: User) {
-    const payload: JwtPayload = { sub: user.id.toString(), email: user.email, role: user.role };
+  async login(user: users) {
+    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role || undefined };
 
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = await this.generateRefreshToken(user.id);
@@ -127,7 +120,7 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
       user: {
-        id: user.id.toString(),
+        id: user.id,
         email: user.email,
         username: user.username,
         role: user.role,
@@ -135,18 +128,18 @@ export class AuthService {
     };
   }
 
-  async refreshToken(refreshToken: string, userId: bigint) {
-    const tokenRecords = await this.prisma.refreshtoken.findMany({
+  async refreshToken(refreshToken: string, userId: string) {
+    const tokenRecords = await this.prisma.refresh_tokens.findMany({
       where: {
         user_id: userId,
         expires_at: { gt: new Date() },
       },
-      include: { User: true },
+      include: { users: true },
     });
 
     let tokenRecord: (typeof tokenRecords)[number] | null = null;
     for (const token of tokenRecords) {
-      const isMatch = await bcrypt.compare(refreshToken, token.hashed_refresh_token);
+      const isMatch = await bcrypt.compare(refreshToken, token.token_hash);
       if (isMatch) {
         tokenRecord = token;
         break;
@@ -158,15 +151,15 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      sub: tokenRecord.User.id.toString(),
-      email: tokenRecord.User.email,
+      sub: tokenRecord.users.id,
+      email: tokenRecord.users.email,
     };
 
     const newAccessToken = this.jwtService.sign(payload);
-    const newRefreshToken = await this.generateRefreshToken(tokenRecord.User.id);
+    const newRefreshToken = await this.generateRefreshToken(tokenRecord.users.id);
 
     // ✅ Chỉ xóa token hiện tại, giữ lại token từ devices khác
-    await this.prisma.refreshtoken.delete({
+    await this.prisma.refresh_tokens.delete({
       where: { id: tokenRecord.id },
     });
 
@@ -174,9 +167,9 @@ export class AuthService {
       access_token: newAccessToken,
       refresh_token: newRefreshToken,
       user: {
-        id: tokenRecord.User.id.toString(),
-        email: tokenRecord.User.email,
-        username: tokenRecord.User.username,
+        id: tokenRecord.users.id,
+        email: tokenRecord.users.email,
+        username: tokenRecord.users.username,
       },
     };
   }
@@ -190,9 +183,9 @@ export class AuthService {
     }
   }
 
-  async logout(refreshToken: string, userId: bigint) {
+  async logout(refreshToken: string, userId: string) {
     // Find all non-expired tokens for user
-    const tokenRecords = await this.prisma.refreshtoken.findMany({
+    const tokenRecords = await this.prisma.refresh_tokens.findMany({
       where: {
         user_id: userId,
         expires_at: { gt: new Date() },
@@ -202,7 +195,7 @@ export class AuthService {
     // Find matching token by comparing hashes
     let matchingToken: (typeof tokenRecords)[number] | null = null;
     for (const token of tokenRecords) {
-      const isMatch = await bcrypt.compare(refreshToken, token.hashed_refresh_token);
+      const isMatch = await bcrypt.compare(refreshToken, token.token_hash);
       if (isMatch) {
         matchingToken = token;
         break;
@@ -214,16 +207,16 @@ export class AuthService {
     }
 
     // Delete only this device's token
-    await this.prisma.refreshtoken.delete({
+    await this.prisma.refresh_tokens.delete({
       where: { id: matchingToken.id },
     });
 
     return { message: responseMessages.logoutOneDevice };
   }
 
-  async logoutAllDevices(userId: bigint) {
+  async logoutAllDevices(userId: string) {
     // Delete all refresh tokens for user
-    const result = await this.prisma.refreshtoken.deleteMany({
+    const result = await this.prisma.refresh_tokens.deleteMany({
       where: { user_id: userId },
     });
 

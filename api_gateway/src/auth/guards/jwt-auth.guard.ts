@@ -15,6 +15,22 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
+  // ✅ Override getRequest to extract token from cookies
+  getRequest(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+
+    // Get token from Authorization header
+    const authHeader = request.headers['authorization'];
+
+    // If no Authorization header, try to get from accessToken cookie
+    if (!authHeader && request.cookies?.accessToken) {
+      request.headers['authorization'] =
+        `Bearer ${request.cookies.accessToken}`;
+    }
+
+    return request;
+  }
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -26,6 +42,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const authHeader: string = request.headers['authorization'];
+
     if (err || !user) {
       this.logger.warn(
         `Nỗ lực truy cập không xác thực : ${info?.message || err?.message}`,

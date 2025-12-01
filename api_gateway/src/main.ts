@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { getConfig } from './config';
+import { getConfig, getCorsConfig } from './config';
 import { setupSwagger } from './config/swagger.config';
 
 const logger = new Logger('Bootstrap');
@@ -12,6 +12,9 @@ async function bootstrap() {
   const config = getConfig();
 
   const app = await NestFactory.create(AppModule);
+
+  // ✅ CORS Configuration - Production Grade
+  app.enableCors(getCorsConfig(config.http.nodeEnv));
 
   // ✅ Global validation pipe for DTO validation
   app.useGlobalPipes(

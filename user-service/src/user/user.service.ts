@@ -70,6 +70,7 @@ export class UserService {
         ...(data.avatarUrl && { avatar_url: data.avatarUrl }),
         ...(data.facebookUrl && { facebook_url: data.facebookUrl }),
         ...(data.zaloPhone && { zalo_phone: data.zaloPhone }),
+        ...(data.country && { country: data.country }),
         updated_at: new Date(),
       },
       select: {
@@ -81,6 +82,7 @@ export class UserService {
         avatar_url: true,
         facebook_url: true,
         zalo_phone: true,
+        country: true,
         role: true,
         created_at: true,
         updated_at: true,

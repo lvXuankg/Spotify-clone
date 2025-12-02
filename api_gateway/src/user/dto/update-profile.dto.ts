@@ -9,6 +9,7 @@ import {
   Matches,
   IsPhoneNumber,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { validationMessages } from 'src/common/constants/validation-messages';
 
 export class UpdateProfileDto {
@@ -49,4 +50,11 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsEmail({}, { message: validationMessages.isEmail })
   email?: string;
+
+  @IsOptional()
+  @IsString({ message: validationMessages.isString('Quốc gia') })
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'Quốc gia phải là mã ISO 2 ký tự (VN, US, etc.)',
+  })
+  country?: string;
 }

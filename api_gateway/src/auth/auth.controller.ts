@@ -75,7 +75,6 @@ export class AuthController {
     @Body() data: LoginDto,
     @Res({ passthrough: true }) res: Response, // cho phép vừa set cookie vừa trả về kết quả
   ) {
-    console.log(data);
     const result = await this.authService.login(data);
 
     const { access_token, refresh_token } = result;
@@ -108,6 +107,7 @@ export class AuthController {
   @ApiResponse(swaggerResponses.logout.success)
   @ApiResponse(swaggerResponses.logout.error)
   async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+    console.log('dang xuat', req.user.userId);
     const refreshToken = req.cookies['refreshToken'];
     const userId = req.user.userId;
 

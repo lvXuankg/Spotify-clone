@@ -1,28 +1,42 @@
 "use client";
 
-import { Button, Space, Tooltip } from "antd";
-import { ReactNode, memo } from "react";
+import { memo, ReactNode } from "react";
 
 interface NavigationButtonProps {
   text: string;
   icon: ReactNode;
-  onClick?: () => void;
-  className?: string;
+  onClick: () => void;
 }
 
 const NavigationButton = memo(
-  ({ text, icon, onClick, className }: NavigationButtonProps) => {
+  ({ text, icon, onClick }: NavigationButtonProps) => {
     return (
-      <Tooltip title={text}>
-        <Button
-          type="text"
-          size="large"
-          icon={icon}
-          onClick={onClick}
-          className={`nav-button ${className || ""}`}
-          style={{ color: "#ffffff" }}
-        />
-      </Tooltip>
+      <button
+        onClick={onClick}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "#ffffff",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "14px",
+          padding: "8px 12px",
+          borderRadius: "20px",
+          transition: "background 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "#282828";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background =
+            "transparent";
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center" }}>{icon}</span>
+        <span>{text}</span>
+      </button>
     );
   }
 );

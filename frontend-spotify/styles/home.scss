@@ -362,7 +362,6 @@
   margin-inline: -12px;
   grid-gap: var(--grid-gap);
   content-visibility: auto;
-  grid-template-rows: repeat(var(1), minmax(0, 1fr));
   grid-template-rows: repeat(var(--row-count), minmax(0, 1fr));
   border: 0;
   margin: 0;

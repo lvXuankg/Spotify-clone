@@ -12,6 +12,7 @@ export interface User {
   facebook_url?: string;
   zalo_phone?: string;
   description?: string;
+  country?: string; // ISO 3166-1 alpha-2 country code (VN, US, etc.)
 
   created_at: string;
   updated_at: string;

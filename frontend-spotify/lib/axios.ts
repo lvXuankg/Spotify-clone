@@ -35,7 +35,16 @@ api.interceptors.response.use(
         await api.post("/auth/refresh");
         return api(original);
       } catch (refreshError) {
-        // Token refresh thất bại → redirect to login
+        // Token refresh thất bại → clear frontend auth state
+        console.log("🚨 REFRESH TOKEN FAILED - clearing frontend auth state");
+
+        // Clear localStorage persist
+        localStorage.removeItem("persist:root");
+        localStorage.removeItem("userId");
+
+        // Reload page để Redux reset
+        window.location.reload();
+
         return Promise.reject(refreshError);
       }
     }

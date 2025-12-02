@@ -1,24 +1,26 @@
 "use client";
 
+import { memo } from "react";
 import ControlButtons from "./ControlButtons";
 import SongProgressBar from "./SongProgressBar";
 
-const PlayControls = () => {
+const PlayControls = memo(() => {
   return (
     <div
       style={{
+        marginTop: 5,
+        marginBottom: -5,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "8px",
-        flex: 1,
-        maxWidth: "400px",
+        width: "40%",
       }}
     >
       <ControlButtons />
       <SongProgressBar />
     </div>
   );
-};
+});
 
+PlayControls.displayName = "PlayControls";
 export default PlayControls;

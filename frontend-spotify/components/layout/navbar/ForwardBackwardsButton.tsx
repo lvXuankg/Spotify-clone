@@ -1,38 +1,53 @@
 "use client";
 
-import { Button, Space } from "antd";
+import { memo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
-import { memo, useCallback } from "react";
 
 interface ForwardBackwardsButtonProps {
-  flip?: boolean;
+  flip: boolean;
 }
 
-const ForwardBackwardsButton = memo(
-  ({ flip = false }: ForwardBackwardsButtonProps) => {
-    const router = useRouter();
+const ForwardBackwardsButton = memo(({ flip }: ForwardBackwardsButtonProps) => {
+  const router = useRouter();
 
-    const handleClick = useCallback(() => {
-      if (flip) {
-        router.back();
-      } else {
-        router.forward();
-      }
-    }, [flip, router]);
+  const navigateBack = () => {
+    router.back();
+  };
 
-    return (
-      <Button
-        type="text"
-        size="large"
-        icon={flip ? <ArrowLeftOutlined /> : <ArrowRightOutlined />}
-        onClick={handleClick}
-        className="nav-button"
-        style={{ color: "#ffffff" }}
+  const navigateForward = () => {
+    router.forward();
+  };
+
+  return (
+    <button
+      style={{
+        background: "black",
+        padding: "8px",
+        borderRadius: "50%",
+        height: "32px",
+        width: "32px",
+        aspectRatio: "1/1",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onClick={flip ? navigateBack : navigateForward}
+      title={flip ? "Go back" : "Go forward"}
+    >
+      <img
+        alt={flip ? "Backwards" : "Forward"}
+        src="/images/forward.svg"
+        style={{
+          width: "100%",
+          height: "100%",
+          transform: flip ? "rotate(180deg)" : "none",
+        }}
       />
-    );
-  }
-);
+    </button>
+  );
+});
 
 ForwardBackwardsButton.displayName = "ForwardBackwardsButton";
 export default ForwardBackwardsButton;

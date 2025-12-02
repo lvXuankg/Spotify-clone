@@ -5,25 +5,12 @@ import PlayControls from "./PlayControls";
 import ExtraControlButtons from "./ExtraButtons";
 import { OtherDeviceAlert } from "./OtherDeviceAlert";
 import { memo } from "react";
+import "@/styles/PlayingBar.scss";
 
 const NowPlayingBar = memo(() => {
   return (
     <>
-      <div
-        className="playing-bar-desktop"
-        style={{
-          width: "100%",
-          backgroundColor: "#000000",
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-          height: "105px",
-          boxSizing: "border-box",
-          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-        }}
-      >
+      <div className="playing-bar-desktop">
         <SongDetails />
         <PlayControls />
         <ExtraControlButtons />

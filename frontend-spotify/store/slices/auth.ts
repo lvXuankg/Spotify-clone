@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-
 import { authService } from "@/services/auth";
 
 import type { User } from "@/interfaces/user";
@@ -8,14 +7,14 @@ import type { LoginDto } from "@/interfaces/auth.interface";
 interface AuthState {
   user?: User;
   isAuthenticated: boolean;
-  requesting: boolean; // Trạng thái đang gọi API (loading)
+  requesting: boolean;
   error?: string;
 }
 
 const initialState: AuthState = {
   user: undefined,
   isAuthenticated: false,
-  requesting: true,
+  requesting: false,
   error: undefined,
 };
 
@@ -53,7 +52,7 @@ export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
     return true;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Đăng nhập thất bại"
+      error.response?.data?.message || "Đăng xuất thất bại"
     );
   }
 });
@@ -69,8 +68,8 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchUser.pending, (state) => {
       state.requesting = true;
-      state.user = undefined;
     });
+
     builder.addCase(
       fetchUser.fulfilled,
       (state, action: PayloadAction<User>) => {
@@ -78,16 +77,19 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.requesting = false;
 
+        // Lưu userId vào localStorage
         if (action.payload?.id) {
           localStorage.setItem("userId", action.payload.id.toString());
         }
       }
     );
-    builder.addCase(fetchUser.rejected, (state, action) => {
+
+    builder.addCase(fetchUser.rejected, (state) => {
+      state.requesting = false;
       state.user = undefined;
       state.isAuthenticated = false;
-      state.requesting = false;
 
+      // Xóa userId khỏi localStorage
       localStorage.removeItem("userId");
     });
 
@@ -97,12 +99,11 @@ const authSlice = createSlice({
     });
 
     builder.addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
-      console.log(state);
-      console.log(action);
       state.user = action.payload;
       state.isAuthenticated = true;
       state.requesting = false;
 
+      // Lưu userId vào localStorage
       if (action.payload?.id) {
         localStorage.setItem("userId", action.payload.id.toString());
       }
@@ -114,15 +115,27 @@ const authSlice = createSlice({
       state.error = action.payload as string;
     });
 
+    builder.addCase(logout.pending, (state) => {
+      console.log("🚀 LOGOUT.pending - setting requesting = true");
+      state.requesting = true;
+    });
+
     builder.addCase(logout.fulfilled, (state) => {
       state.user = undefined;
       state.isAuthenticated = false;
+      state.requesting = false;
+
+      // Xóa userId khỏi localStorage
       localStorage.removeItem("userId");
     });
 
     builder.addCase(logout.rejected, (state) => {
+      // API fail vẫn đăng xuất
       state.user = undefined;
       state.isAuthenticated = false;
+      state.requesting = false;
+
+      // Xóa userId khỏi localStorage
       localStorage.removeItem("userId");
     });
   },

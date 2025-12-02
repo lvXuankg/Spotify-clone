@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "@/store/store";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, App as AntdApp } from "antd";
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
 
 interface ProvidersProps {
@@ -12,6 +12,17 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+  useEffect(() => {
+    // Monitor redux-persist state changes
+    persistor.subscribe(() => {
+      const persisted = localStorage.getItem("persist:root");
+      console.log(
+        "📦 PERSIST STATE CHANGED:",
+        persisted ? "✅ persist:root exists" : "❌ persist:root deleted"
+      );
+    });
+  }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={<LoadingScreen />} persistor={persistor}>
@@ -24,8 +35,10 @@ export function Providers({ children }: ProvidersProps) {
             },
           }}
         >
-          <ToasterProvider />
-          {children}
+          <AntdApp>
+            <ToasterProvider />
+            {children}
+          </AntdApp>
         </ConfigProvider>
       </PersistGate>
     </Provider>

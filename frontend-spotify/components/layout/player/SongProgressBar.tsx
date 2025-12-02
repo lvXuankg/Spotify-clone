@@ -1,62 +1,65 @@
 "use client";
 
-import { Slider, Space } from "antd";
+import { memo, useEffect, useState } from "react";
+import { Slider } from "@/components/Slider";
+import { msToTime } from "@/utils/utils";
 import { useAppSelector } from "@/store/store";
-import { memo } from "react";
-
-const formatTime = (ms: number) => {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
+import { playerService } from "@/services/player";
 
 const SongProgressBar = memo(() => {
-  const current_track = useAppSelector(
-    (state) => state.spotify.state?.track_window.current_track
-  );
-  const progress_ms = useAppSelector(
-    (state) => state.spotify.state?.progress_ms
-  );
+  const loaded = useAppSelector((state) => !!state.player.currentTrack);
+  const progress_ms = useAppSelector((state) => state.player.progress_ms);
+  const duration_ms = useAppSelector((state) => state.player.duration_ms);
 
-  if (!current_track) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-        }}
-      >
-        <span style={{ color: "#b3b3b3", fontSize: "12px" }}>0:00</span>
-        <Slider style={{ flex: 1 }} value={0} disabled />
-        <span style={{ color: "#b3b3b3", fontSize: "12px" }}>0:00</span>
-      </div>
-    );
-  }
+  const [value, setValue] = useState<number>(0);
+  const [selecting, setSelecting] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (progress_ms && duration_ms && !selecting) {
+      setValue(
+        duration_ms
+          ? progress_ms >= duration_ms
+            ? 0
+            : progress_ms / duration_ms
+          : 0
+      );
+    }
+  }, [progress_ms, duration_ms, selecting]);
 
   return (
     <div
       style={{
-        width: "100%",
         display: "flex",
         alignItems: "center",
-        gap: "12px",
+        justifyContent: "space-between",
+        width: "100%",
       }}
     >
-      <span style={{ color: "#b3b3b3", fontSize: "12px" }}>
-        {formatTime(progress_ms || 0)}
-      </span>
-      <Slider
-        style={{ flex: 1 }}
-        value={progress_ms || 0}
-        max={current_track.duration_ms}
-        tooltip={{ formatter: (value) => formatTime(value as number) }}
-      />
-      <span style={{ color: "#b3b3b3", fontSize: "12px" }}>
-        {formatTime(current_track.duration_ms)}
-      </span>
+      <div style={{ color: "white", marginRight: "8px", fontSize: "12px" }}>
+        {progress_ms ? msToTime(progress_ms) : "0:00"}
+      </div>
+      <div style={{ width: "100%" }}>
+        <Slider
+          isEnabled
+          value={value}
+          onChangeStart={() => {
+            setSelecting(true);
+          }}
+          onChange={(value) => {
+            setValue(value);
+          }}
+          onChangeEnd={(value) => {
+            setSelecting(false);
+            if (!loaded) return;
+            setValue(value);
+            const newPosition = Math.round((duration_ms || 0) * value);
+            playerService.seek(newPosition).then();
+          }}
+        />
+      </div>
+      <div style={{ color: "white", marginLeft: "8px", fontSize: "12px" }}>
+        {duration_ms ? msToTime(duration_ms) : "0:00"}
+      </div>
     </div>
   );
 });

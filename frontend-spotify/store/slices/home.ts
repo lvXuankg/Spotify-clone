@@ -118,12 +118,14 @@ const homeSlice = createSlice({
     },
     // TODO: Thêm các action khác
     fetchFeaturedPlaylists: (state) => {
-      // TODO: Implement thực tế
-      state.loading = true;
+      // TODO: Implement thực tế với real API
+      state.loading = false;
+      // Mock data đã có trong initialState
     },
     fetchRecentlyPlayed: (state) => {
-      // TODO: Implement thực tế
-      state.loading = true;
+      // TODO: Implement thực tế với real API
+      state.loading = false;
+      // Mock data đã có trong initialState
     },
   },
 });

@@ -3,7 +3,7 @@
 import { Space, Avatar, Dropdown, Button, MenuProps } from "antd";
 import { useAppSelector, useAppDispatch } from "@/store/store";
 import { useRouter } from "next/navigation";
-import { authActions } from "@/store/slices/auth";
+import { logout } from "@/store/slices/auth";
 import {
   UserOutlined,
   SettingOutlined,
@@ -22,6 +22,20 @@ const Header = memo(({ opacity = 1 }: HeaderProps) => {
   const { t } = useTranslation(["navbar"]);
   const user = useAppSelector((state) => state.auth.user);
 
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      console.log("✅ Logout completed, waiting for localStorage clear...");
+
+      // Đợi localStorage clear
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      router.push("/login");
+    }
+  };
+
   const menuItems: MenuProps["items"] = [
     {
       key: "profile",
@@ -37,8 +51,7 @@ const Header = memo(({ opacity = 1 }: HeaderProps) => {
       label: t("Logout"),
       icon: <LogoutOutlined />,
       onClick: () => {
-        // dispatch(authActions.logout())
-        router.push("/login");
+        handleLogout();
       },
       danger: true,
     },

@@ -1,70 +1,85 @@
 "use client";
 
+import { memo, useState, useEffect, useRef } from "react";
 import { Input, Space } from "antd";
-import NavigationButton from "./NavigationButton";
-import { SearchOutlined, HomeOutlined } from "@ant-design/icons";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslation } from "react-i18next";
-import { memo, useEffect, useRef, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useDebounce } from "use-debounce";
+import NavigationButton from "./NavigationButton";
+import ForwardBackwardsButton from "./ForwardBackwardsButton";
+
+// Icons (simplified - replace with actual icons)
+const HomeIcon = () => <span>🏠</span>;
+const ActiveHomeIcon = () => <span>🏠</span>;
+const SearchIcon = () => <span>🔍</span>;
+const BrowseIcon = () => <span>📂</span>;
+
+const INITIAL_VALUE = "";
 
 function usePrevious(value: any) {
   const ref = useRef(null);
   useEffect(() => {
     ref.current = value;
-  });
+  }, [value]);
   return ref.current;
 }
 
 export const Search = memo(() => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { t } = useTranslation(["navbar"]);
+  const pathname = usePathname();
 
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>(INITIAL_VALUE);
   const [debouncedValue] = useDebounce(inputValue, 600);
   const prevValue = usePrevious(debouncedValue);
 
   useEffect(() => {
     if (debouncedValue !== "" && debouncedValue !== prevValue) {
-      router.push(`/search/${debouncedValue}`);
+      router.push(`/search?q=${encodeURIComponent(debouncedValue)}`);
     }
   }, [debouncedValue, prevValue, router]);
 
-  const isHome = router.pathname === "/";
+  const isHome = pathname === "/" || pathname === "/home";
 
   return (
-    <Space size={10} align="center">
+    <Space size={10} style={{ display: "flex", alignItems: "center" }}>
       <NavigationButton
-        text={t("Home")}
-        icon={<HomeOutlined />}
+        text="Home"
+        icon={isHome ? <ActiveHomeIcon /> : <HomeIcon />}
         onClick={() => router.push("/")}
       />
 
       <Input
         size="large"
-        className="search-input"
-        prefix={<SearchOutlined />}
+        style={{
+          backgroundColor: "#282828",
+          border: "none",
+          color: "#ffffff",
+          borderRadius: "20px",
+        }}
+        prefix={<SearchIcon />}
         suffix={
           <button
             onClick={() => {
               router.push("/search");
             }}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#ffffff",
+            }}
           >
-            <SearchOutlined />
+            <BrowseIcon />
           </button>
         }
-        value={inputValue}
+        defaultValue={INITIAL_VALUE}
         onChange={(e) => {
           setInputValue(e.target.value);
         }}
-        placeholder={
-          t("SearchPlaceholder") || "Search songs, artists, playlists..."
-        }
+        placeholder="Search songs, artists, albums..."
       />
     </Space>
   );
 });
 
 Search.displayName = "Search";
+export default Search;

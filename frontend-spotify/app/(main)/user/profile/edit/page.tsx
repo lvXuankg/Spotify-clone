@@ -59,16 +59,36 @@ const EditProfilePage = memo(() => {
           form={form}
           layout="vertical"
           initialValues={{
+            name: user.name,
             username: user.username,
             email: user.email,
             bio: user.bio,
             country: user.country,
             facebookUrl: user.facebook_url,
             zaloPhone: user.zalo_phone,
-            avatarUrl: user.avatar_url,
           }}
           onFinish={handleSubmit}
         >
+          <Form.Item
+            label={<span style={{ color: "#fff" }}>Tên Hiển Thị</span>}
+            name="name"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên hiển thị" },
+              {
+                min: 2,
+                message: "Tên hiển thị phải có ít nhất 2 ký tự",
+              },
+            ]}
+          >
+            <Input
+              style={{
+                backgroundColor: "#404040",
+                border: "1px solid #535353",
+                color: "#ffffff",
+              }}
+            />
+          </Form.Item>
+
           <Form.Item
             label={<span style={{ color: "#fff" }}>Username</span>}
             name="username"
@@ -162,20 +182,6 @@ const EditProfilePage = memo(() => {
                 color: "#ffffff",
               }}
               placeholder="Your Zalo phone number"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={<span style={{ color: "#fff" }}>Avatar URL</span>}
-            name="avatarUrl"
-          >
-            <Input
-              style={{
-                backgroundColor: "#404040",
-                border: "1px solid #535353",
-                color: "#ffffff",
-              }}
-              placeholder="https://example.com/avatar.jpg"
             />
           </Form.Item>
 

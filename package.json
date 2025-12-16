@@ -1,0 +1,6 @@
+{
+	"dependencies": {
+		"@nestjs/terminus": "^11.0.0",
+		"@nestjs/axios": "^4.0.1"
+	}
+}

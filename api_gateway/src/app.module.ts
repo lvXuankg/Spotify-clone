@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './health/health.module';
 import { UserModule } from './user/user.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from './user/user.module';
     LoggerModule,
     HealthModule,
     UserModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

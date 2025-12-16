@@ -28,6 +28,17 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'FILE_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().fileService.urls,
+          queue: getConfig().fileService.queue,
+          queueOptions: {
+            durable: getConfig().fileService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

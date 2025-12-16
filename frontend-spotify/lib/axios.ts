@@ -1,4 +1,5 @@
 import axios from "axios";
+import { snakeToCamelCase } from "./camelcase-transformer";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -11,6 +12,14 @@ const api = axios.create({
 
 // List các endpoint không được retry token
 const NO_RETRY_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/refresh"];
+
+// Request interceptor: Convert snake_case to camelCase
+api.interceptors.request.use((config) => {
+  if (config.data && typeof config.data === "object") {
+    config.data = snakeToCamelCase(config.data);
+  }
+  return config;
+});
 
 api.interceptors.response.use(
   (res) => res,

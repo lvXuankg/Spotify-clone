@@ -21,6 +21,7 @@ const Header = memo(({ opacity = 1 }: HeaderProps) => {
   const router = useRouter();
   const { t } = useTranslation(["navbar"]);
   const user = useAppSelector((state) => state.auth.user);
+  const profile = useAppSelector((state) => state.profile.profile);
 
   const handleLogout = async () => {
     try {
@@ -78,12 +79,12 @@ const Header = memo(({ opacity = 1 }: HeaderProps) => {
       <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
         <Avatar
           size="large"
-          src={user.images?.[0]?.url}
-          alt={user.display_name}
+          src={profile?.avatar_url || user?.images?.[0]?.url}
+          alt={user?.display_name}
           style={{ cursor: "pointer" }}
           icon={<UserOutlined />}
         >
-          {user.display_name?.[0]?.toUpperCase()}
+          {user?.display_name?.[0]?.toUpperCase()}
         </Avatar>
       </Dropdown>
     </Space>

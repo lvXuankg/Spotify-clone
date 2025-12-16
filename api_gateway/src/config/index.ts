@@ -3,6 +3,7 @@ export { getCorsConfig } from './cors.config';
 export interface AppConfig {
   authService: AuthRabbitMQ;
   userService: UserRabbitMQ;
+  fileService: FileRabbitMQ;
   http: HttpConfig;
 }
 
@@ -13,6 +14,12 @@ export interface AuthRabbitMQ {
 }
 
 export interface UserRabbitMQ {
+  urls: string[];
+  queue: string;
+  durable: boolean;
+}
+
+export interface FileRabbitMQ {
   urls: string[];
   queue: string;
   durable: boolean;
@@ -41,6 +48,14 @@ export const getConfig = (): AppConfig => ({
     ],
     queue: process.env.USER_SERVICE_RABBITMQ_QUEUE || 'auth_queue',
     durable: process.env.USER_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+  },
+  fileService: {
+    urls: [
+      process.env.FILE_SERVICE_RABBITMQ_URL ||
+        'amqp://admin:1234@localhost:5672',
+    ],
+    queue: process.env.FILE_SERVICE_RABBITMQ_QUEUE || 'file_queue',
+    durable: process.env.FILE_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
   },
   http: {
     port: parseInt(process.env.PORT || '8080', 10),

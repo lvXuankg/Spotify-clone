@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+/dist
+/build
+*.tsbuildinfo
+
+# IDE and editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage
+/coverage
+/.nyc_output
+
+# Prisma
+prisma/migrations/
+generated/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Misc
+.env.test
+.cache
+
+# Services logs
+*/logs
+**/logs/*.log

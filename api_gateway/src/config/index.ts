@@ -4,6 +4,8 @@ export interface AppConfig {
   authService: AuthRabbitMQ;
   userService: UserRabbitMQ;
   fileService: FileRabbitMQ;
+  artistService: ArtistRabbitMQ;
+  albumService: AlbumRabbitMQ;
   http: HttpConfig;
 }
 
@@ -19,7 +21,19 @@ export interface UserRabbitMQ {
   durable: boolean;
 }
 
+export interface ArtistRabbitMQ {
+  urls: string[];
+  queue: string;
+  durable: boolean;
+}
+
 export interface FileRabbitMQ {
+  urls: string[];
+  queue: string;
+  durable: boolean;
+}
+
+export interface AlbumRabbitMQ {
   urls: string[];
   queue: string;
   durable: boolean;
@@ -56,6 +70,22 @@ export const getConfig = (): AppConfig => ({
     ],
     queue: process.env.FILE_SERVICE_RABBITMQ_QUEUE || 'file_queue',
     durable: process.env.FILE_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+  },
+  artistService: {
+    urls: [
+      process.env.ARTIST_SERVICE_RABBITMQ_URL ||
+        'amqp://admin:1234@localhost:5672',
+    ],
+    queue: process.env.ARTIST_SERVICE_RABBITMQ_QUEUE || 'artist_queue',
+    durable: process.env.ARTIST_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+  },
+  albumService: {
+    urls: [
+      process.env.ALBUM_SERVICE_RABBITMQ_URL ||
+        'amqp://admin:1234@localhost:5672',
+    ],
+    queue: process.env.ALBUM_SERVICE_RABBITMQ_QUEUE || 'album_queue',
+    durable: process.env.ALBUM_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
   },
   http: {
     port: parseInt(process.env.PORT || '8080', 10),

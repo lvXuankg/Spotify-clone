@@ -49,36 +49,38 @@ const appReducer = combineReducers({
   language: languageReducer,
 });
 
-// Bọc persist 1 lần duy nhất
-const persistedReducer = persistReducer(persistConfig, appReducer);
-
-type AppState = ReturnType<typeof persistedReducer>;
-
-// Root reducer - xử lý reset state khi logout
-const rootReducer: Reducer = (
-  state: AppState | undefined,
-  action: AnyAction
-) => {
-  // Khi logout → reset state về undefined
+// Root reducer - xử lý reset state khi logout trước khi persist
+const rootReducer: Reducer = (state: any, action: AnyAction) => {
+  // Khi logout → reset state về undefined để persist xử lý
   if (
     action.type === logout.fulfilled.type ||
     action.type === logout.rejected.type
   ) {
     console.log("🚨 LOGOUT triggered - resetting ALL state");
-    // Gửi undefined state qua persistedReducer
-    // persistedReducer sẽ tự handle state reset
-    return persistedReducer(undefined, action);
+    state = undefined;
   }
-
-  // Bình thường qua persistedReducer (handle persist/rehydrate)
-  return persistedReducer(state, action);
+  return appReducer(state, action);
 };
 
+// Bọc persist 1 lần duy nhất - AFTER root reducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
 export const store = configureStore({
-  reducer: rootReducer,
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        // Bỏ qua các persist actions vì chúng chứa non-serializable data
+        ignoredActions: [
+          "persist/PERSIST",
+          "persist/REHYDRATE",
+          "persist/PAUSE",
+          "persist/RESUME",
+          "persist/PURGE",
+        ],
+        // Bỏ qua _persist key trong state
+        ignoredPaths: ["_persist"],
+      },
     }).concat((store: any) => (next: any) => (action: any) => {
       const result = next(action);
 
@@ -87,7 +89,7 @@ export const store = configureStore({
         action.type === logout.fulfilled.type ||
         action.type === logout.rejected.type
       ) {
-        console.log("� Calling persistor.purge() to clear localStorage");
+        console.log("🧹 Calling persistor.purge() to clear localStorage");
         persistor.purge();
       }
 

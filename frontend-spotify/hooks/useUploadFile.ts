@@ -47,6 +47,8 @@ export function useUploadFile() {
         throw new Error("Upload lên Cloudinary thất bại");
       }
 
+      console.log(cloudinaryRes);
+
       const cloudinaryData = cloudinaryRes.data;
 
       // 3. Lưu metadata vào backend

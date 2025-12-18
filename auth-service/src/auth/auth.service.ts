@@ -159,7 +159,8 @@ export class AuthService {
     const newRefreshToken = await this.generateRefreshToken(tokenRecord.users.id);
 
     // ✅ Chỉ xóa token hiện tại, giữ lại token từ devices khác
-    await this.prisma.refresh_tokens.delete({
+    // Sử dụng deleteMany để tránh error nếu record không tồn tại
+    await this.prisma.refresh_tokens.deleteMany({
       where: { id: tokenRecord.id },
     });
 

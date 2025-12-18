@@ -6,13 +6,16 @@ import { Form, Input, Button, Card, Spin } from "antd";
 import Link from "next/link";
 import { useToast } from "@/hooks/useToast";
 import { useEffect } from "react";
+import { register } from "@/store/slices/auth";
 
 export default function RegisterPage() {
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const toast = useToast();
-  const { requesting, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { requesting, isAuthenticated, error } = useAppSelector(
+    (state) => state.auth
+  );
 
   // Redirect nếu đã login - dùng useEffect thay vì gọi trực tiếp
   useEffect(() => {
@@ -21,10 +24,26 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, router]);
 
+  // Hiển thị error nếu có
+  useEffect(() => {
+    if (error) {
+      toast.error("Registration failed", error);
+    }
+  }, [error, toast]);
+
   const onFinish = async (values: any) => {
     try {
+      const registerDto = {
+        email: values.email,
+        password: values.password,
+      };
+
+      const result = await dispatch(register(registerDto)).unwrap();
+
       toast.success("Account created!", "Redirecting to login...");
-      router.push("/login");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (error: any) {
       toast.error("Registration failed", error || "Please try again");
     }
@@ -57,12 +76,13 @@ export default function RegisterPage() {
               name="email"
               rules={[
                 { required: true, message: "Please enter your email!" },
-                { type: "email", message: "Invalid email!" },
+                { type: "email", message: "Invalid email format!" },
               ]}
             >
               <Input
                 placeholder="your@email.com"
                 size="large"
+                disabled={requesting}
                 style={{
                   backgroundColor: "#404040",
                   border: "1px solid #535353",
@@ -83,6 +103,7 @@ export default function RegisterPage() {
               <Input.Password
                 placeholder="Min 6 characters"
                 size="large"
+                disabled={requesting}
                 style={{
                   backgroundColor: "#404040",
                   border: "1px solid #535353",
@@ -109,6 +130,7 @@ export default function RegisterPage() {
               <Input.Password
                 placeholder="Confirm password"
                 size="large"
+                disabled={requesting}
                 style={{
                   backgroundColor: "#404040",
                   border: "1px solid #535353",
@@ -124,6 +146,7 @@ export default function RegisterPage() {
                 size="large"
                 block
                 loading={requesting}
+                disabled={requesting}
                 style={{
                   backgroundColor: "#1DB954",
                   borderColor: "#1DB954",
@@ -132,7 +155,7 @@ export default function RegisterPage() {
                   fontWeight: "600",
                 }}
               >
-                {requesting ? "Creating..." : "Create Account"}
+                {requesting ? "Creating Account..." : "Create Account"}
               </Button>
             </Form.Item>
 

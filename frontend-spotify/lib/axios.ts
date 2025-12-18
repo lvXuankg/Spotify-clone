@@ -1,5 +1,8 @@
 import axios from "axios";
-import { snakeToCamelCase } from "./camelcase-transformer";
+import {
+  transformSnakeToCamelCase,
+  transformCamelToSnakeCase,
+} from "./camelcase-transformer";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -11,18 +14,24 @@ const api = axios.create({
 });
 
 // List các endpoint không được retry token
-const NO_RETRY_ENDPOINTS = ["/auth/login", "/auth/register", "/auth/refresh"];
+const NO_RETRY_ENDPOINTS = ["/login", "/register", "/refreshToken"];
 
-// Request interceptor: Convert snake_case to camelCase
+/**
+ * Request interceptor: Convert snake_case (Database format) → camelCase (Backend expects)
+ * Frontend uses snake_case (from database), convert to camelCase before sending to Backend
+ */
 api.interceptors.request.use((config) => {
   if (config.data && typeof config.data === "object") {
-    config.data = snakeToCamelCase(config.data);
+    // Convert object keys từ snake_case → camelCase trước khi gửi
+    config.data = transformSnakeToCamelCase(config.data);
   }
   return config;
 });
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    return res;
+  },
   async (err) => {
     const original = err.config;
     const endpoint = original.url || "";
@@ -41,7 +50,12 @@ api.interceptors.response.use(
       original._retry = true;
 
       try {
-        await api.post("/auth/refresh");
+        // Get userId from localStorage
+        const userId = localStorage.getItem("userId");
+
+        await api.post("/auth/refreshToken", {
+          userId,
+        });
         return api(original);
       } catch (refreshError) {
         // Token refresh thất bại → clear frontend auth state

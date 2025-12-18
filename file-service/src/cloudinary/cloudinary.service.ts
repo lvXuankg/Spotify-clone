@@ -1,4 +1,11 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  ForbiddenException,
+  HttpException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
 import { v4 as uuidv4 } from 'uuid';
@@ -143,24 +150,45 @@ export class CloudinaryService {
   /**
    * Delete file from Cloudinary
    */
-  async deleteFile(publicId: string): Promise<DeleteResponseDto> {
+  async deleteFile(
+    publicId: string,
+    userId?: string,
+  ): Promise<DeleteResponseDto> {
     try {
-      const result = await cloudinary.uploader.destroy(publicId);
+      const mediaFile =
+        await this.mediaFileService.getMediaFileByPublicId(publicId);
 
-      if (result.result === 'ok') {
-        this.logger.log(`File deleted successfully: ${publicId}`);
-        return {
-          success: true,
-          message: 'File deleted successfully',
-        };
+      if (!mediaFile) {
+        throw new NotFoundException({
+          message: 'Không tìm thấy thông tin file',
+        });
+      }
+
+      if (userId && mediaFile.uploadedBy !== userId) {
+        throw new ForbiddenException({
+          message: 'Bạn không có quyền xóa file không thuộc về mình',
+        });
+      }
+
+      const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: mediaFile.resourceType,
+      });
+
+      if (result.result !== 'ok') {
+        throw new BadRequestException('Xóa file trên Cloudinary thất bại');
       }
 
       return {
-        success: false,
-        message: 'File not found or already deleted',
+        success: true,
+        message: 'Đã xóa file thành công',
       };
     } catch (error) {
       this.logger.error(`Delete file failed for ${publicId}: ${error.message}`);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new BadRequestException(`Failed to delete file: ${error.message}`);
     }
   }

@@ -39,6 +39,28 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'ARTIST_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().artistService.urls,
+          queue: getConfig().artistService.queue,
+          queueOptions: {
+            durable: getConfig().artistService.durable,
+          },
+        },
+      },
+      {
+        name: 'ALBUM_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().albumService.urls,
+          queue: getConfig().albumService.queue,
+          queueOptions: {
+            durable: getConfig().albumService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

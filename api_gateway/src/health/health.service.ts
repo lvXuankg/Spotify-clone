@@ -11,6 +11,8 @@ export class HealthService {
     @Inject('AUTH_SERVICE') private authServiceClient: ClientProxy,
     @Inject('USER_SERVICE') private userServiceClient: ClientProxy,
     @Inject('FILE_SERVICE') private fileServiceClient: ClientProxy,
+    @Inject('ARTIST_SERVICE') private artistServiceClient: ClientProxy,
+    @Inject('ALBUM_SERVICE') private albumServiceClient: ClientProxy,
     private readonly logger: LoggerService,
   ) {}
 
@@ -87,6 +89,20 @@ export class HealthService {
       this.fileServiceClient,
     );
     services.push(fileServiceHealth);
+
+    // Check Artist Service
+    const artistServiceHealth = await this.checkServiceHealth(
+      'Artist Service',
+      this.artistServiceClient,
+    );
+    services.push(artistServiceHealth);
+
+    // Check Album Service
+    const albumServiceHealth = await this.checkServiceHealth(
+      'Album Service',
+      this.albumServiceClient,
+    );
+    services.push(albumServiceHealth);
 
     // Determine overall status
     const allHealthy = services.every((s) => s.status === 'up');

@@ -19,4 +19,12 @@ export const validationMessages = {
     `Trường ${key} phải lớn hơn hoặc bằng ${min}`,
   max: (key: string = DEFAULT_FIELD_NAME, max: number = 100) =>
     `Trường ${key} không được vượt quá ${max}`,
+  isUUID: (key: string = DEFAULT_FIELD_NAME) =>
+    `Trường ${key} phải là một UUID hợp lệ`,
+  isDateString: (key: string = DEFAULT_FIELD_NAME) =>
+    `Trường ${key} phải là một ngày hợp lệ (ISO 8601)`,
+  isUrl: (key: string = DEFAULT_FIELD_NAME) =>
+    `Trường ${key} phải là một URL hợp lệ`,
+  isEnum: (key: string = DEFAULT_FIELD_NAME, options: string[] = []) =>
+    `Trường ${key} phải là một trong các giá trị: ${options.join(', ')}`,
 };

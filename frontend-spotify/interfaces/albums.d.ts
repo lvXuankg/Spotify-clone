@@ -1,53 +1,75 @@
-import type { SimpleArtist } from './artist';
+import type { SimpleArtist } from "./artist";
+
+export type AlbumType = "SINGLE" | "EP" | "ALBUM";
 
 export interface Album {
-  /** @description The type of the album. */
-  album_type: 'album' | 'single' | 'compilation';
-
-  /** @description The artists of the album. Each artist object includes a link in href to more detailed information about the artist. */
-  artists: SimpleArtist[];
-
-  /** @description The markets in which the album is available: ISO 3166-1 alpha-2 country codes. NOTE: an album is considered available in a market when at least 1 of its tracks is available in that market. */
-  available_markets: string[];
-
-  /** @description Known external URLs for this album. */
-  external_urls: {
-    spotify: string;
-  };
-
-  /** @description A link to the Web API endpoint providing full details of the album. */
-  href: string;
-
-  /** @description The Spotify ID for the album. */
+  /** @description Định danh duy nhất của album (UUID) */
   id: string;
 
-  /** @description The cover art for the album in various sizes, widest first. */
-  images: {
-    url: string;
-    width: number;
-    height: number;
-  }[];
+  /** @description ID của nghệ sĩ sở hữu album */
+  artist_id: string;
 
-  /** @description The name of the album. In case of an album takedown, the value may be an empty string. */
-  name: string;
+  /** @description Tên/tiêu đề của album */
+  title: string;
 
-  /** @description The date the album was first released. */
-  release_date: string;
+  /** @description URL ảnh bìa của album */
+  cover_url?: string | null;
 
-  /** @description The precision with which release_date value is known. */
-  release_date_precision: 'year' | 'month' | 'day';
+  /** @description Ngày phát hành album */
+  release_date?: string | null;
 
-  /** @description The number of tracks in the album.. */
-  total_tracks: number;
+  /** @description Loại album: SINGLE, EP, ALBUM */
+  type: AlbumType;
 
-  /** @description The object type. */
-  type: 'album';
+  /** @description Thời gian tạo album (ISO 8601) */
+  created_at: string;
 
-  /** @description The Spotify URI for the album. */
-  uri: string;
+  /** @description Thời gian cập nhật lần cuối (ISO 8601) */
+  updated_at: string;
+
+  /** @description Camel case properties từ API response */
+  artistId?: string;
+  coverUrl?: string | null;
+  releaseDate?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-interface AlbumFullObject extends Album {
-  /** @description The tracks of the album. */
-  tracks: Track[];
+export interface CreateAlbumDto {
+  /** @description Tên/tiêu đề của album (bắt buộc) */
+  title: string;
+
+  /** @description URL ảnh bìa của album */
+  coverUrl?: string | null;
+
+  /** @description Ngày phát hành album */
+  releaseDate?: string | null;
+
+  /** @description Loại album: SINGLE, EP, ALBUM */
+  type?: AlbumType;
+}
+
+export interface UpdateAlbumDto {
+  /** @description Tên/tiêu đề của album */
+  title?: string;
+
+  /** @description URL ảnh bìa của album */
+  coverUrl?: string | null;
+
+  /** @description Ngày phát hành album */
+  releaseDate?: string | null;
+
+  /** @description Loại album: SINGLE, EP, ALBUM */
+  type?: AlbumType;
+}
+
+export interface GetAlbumsResponse {
+  data: Album[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }

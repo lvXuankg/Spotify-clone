@@ -8,6 +8,8 @@ import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './health/health.module';
 import { UserModule } from './user/user.module';
 import { FileModule } from './file/file.module';
+import { ArtistModule } from './artist/artist.module';
+import { AlbumModule } from './album/album.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { FileModule } from './file/file.module';
     HealthModule,
     UserModule,
     FileModule,
+    ArtistModule,
+    AlbumModule,
   ],
   controllers: [AppController],
   providers: [AppService],

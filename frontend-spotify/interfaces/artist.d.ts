@@ -1,49 +1,81 @@
+import { PaginationMeta } from "./pagination";
+
 export interface Artist {
-  /** @description Known external URLs for this artist. */
-  external_urls: {
-    /** @description The Spotify URL for the object. */
-    spotify: string;
-  };
-
-  /** @description Information about the followers of the artist. */
-  followers: {
-    /** @description This will always be set to null, as the Web API does not support it at the moment. */
-    href: string;
-
-    /** @description The total number of followers. */
-    total: number;
-  };
-
-  /**
-   * @description A list of the genres the artist is associated with. If not yet classified, the array is empty.
-   * @example ["Prog rock","Grunge"]
-   */
-  genres: string[];
-
-  /** @description A link to the Web API endpoint providing full details of the artist. */
-  href: string;
-
-  /** @description The Spotify ID for the artist. */
+  /** @description Định danh duy nhất của nghệ sĩ (UUID) */
   id: string;
 
-  /** @description Images of the artist in various sizes, widest first. */
-  images: {
-    url: string;
-    height: number;
-    width: number;
-  }[];
+  /** @description ID của người dùng sở hữu/tạo hồ sơ nghệ sĩ này */
+  user_id?: string;
 
-  /** @description The name of the artist. */
-  name: string;
+  /** @description Tên hiển thị của nghệ sĩ */
+  display_name: string;
 
-  /** @description The popularity of the artist. The value will be between 0 and 100, with 100 being the most popular. The artist's popularity is calculated from the popularity of all the artist's tracks. */
-  popularity: number;
+  /** @description URL ảnh đại diện/hồ sơ của nghệ sĩ */
+  avatar_url?: string | null;
 
-  /** @description The object type. */
-  type: 'artist';
+  /** @description URL ảnh bìa của nghệ sĩ */
+  cover_image_url?: string | null;
 
-  /** @description The Spotify URI for the artist. */
-  uri: string;
+  /** @description Tiểu sử hoặc mô tả của nghệ sĩ */
+  bio?: string | null;
+
+  /** @description Thời gian tạo nghệ sĩ (định dạng ISO 8601) */
+  created_at?: string;
+
+  /** @description Thời gian cập nhật lần cuối (định dạng ISO 8601) */
+  updated_at?: string;
+
+  /** @description Camel case properties từ API response */
+  displayName?: string;
+  avatarUrl?: string | null;
+  coverImageUrl?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type SimpleArtist = Pick<Artist, 'external_urls' | 'id' | 'href' | 'name' | 'type' | 'uri'>;
+export interface CreateArtistDto {
+  /** @description Tên hiển thị của nghệ sĩ (bắt buộc) */
+  display_name: string;
+
+  /** @description URL ảnh đại diện/hồ sơ của nghệ sĩ */
+  avatar_url?: string | null;
+
+  /** @description URL ảnh bìa của nghệ sĩ */
+  cover_image_url?: string | null;
+
+  /** @description Tiểu sử hoặc mô tả của nghệ sĩ */
+  bio?: string | null;
+}
+
+export interface UpdateArtistDto {
+  /** @description Tên hiển thị của nghệ sĩ */
+  display_name?: string;
+
+  /** @description URL ảnh đại diện/hồ sơ của nghệ sĩ */
+  avatar_url?: string | null;
+
+  /** @description URL ảnh bìa của nghệ sĩ */
+  cover_image_url?: string | null;
+
+  /** @description Tiểu sử hoặc mô tả của nghệ sĩ */
+  bio?: string | null;
+}
+
+export type SimpleArtist = Pick<
+  Artist,
+  "id" | "user_id" | "display_name" | "avatar_url"
+>;
+
+/** @description Danh sách nghệ sĩ */
+export interface FindAllArtistsResponse {
+  /** @description Danh sách nghệ sĩ */
+  data: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string | null;
+    createdAt?: string;
+  }[];
+
+  /** @description Thông tin phân trang */
+  pagination: PaginationMeta;
+}

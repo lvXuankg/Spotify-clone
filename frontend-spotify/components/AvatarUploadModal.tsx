@@ -66,6 +66,7 @@ export default function AvatarUploadModal({
     }
 
     setUploading(true);
+
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {

@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { authService } from "@/services/auth";
 
 import type { User } from "@/interfaces/user";
-import type { LoginDto } from "@/interfaces/auth.interface";
+import type { LoginDto, RegisterDto } from "@/interfaces/auth.interface";
 
 interface AuthState {
   user?: User;
@@ -56,6 +56,20 @@ export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
     );
   }
 });
+
+export const register = createAsyncThunk(
+  "auth/register",
+  async (payload: RegisterDto, thunkAPI) => {
+    try {
+      const response = await authService.register(payload);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Đăng ký thất bại"
+      );
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -137,6 +151,20 @@ const authSlice = createSlice({
 
       // Xóa userId khỏi localStorage
       localStorage.removeItem("userId");
+    });
+
+    builder.addCase(register.pending, (state) => {
+      state.requesting = true;
+      state.error = undefined;
+    });
+
+    builder.addCase(register.fulfilled, (state) => {
+      state.requesting = false;
+    });
+
+    builder.addCase(register.rejected, (state, action) => {
+      state.requesting = false;
+      state.error = action.payload as string;
     });
   },
 });

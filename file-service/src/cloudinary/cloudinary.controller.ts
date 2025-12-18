@@ -77,14 +77,19 @@ export class CloudinaryController {
   }
 
   @MessagePattern('file.delete')
-  async deleteFileMicroservice(@Payload() payload: { publicId: string }) {
+  async deleteFileMicroservice(
+    @Payload() payload: { publicId: string; userId?: string },
+  ) {
     this.logger.log(`[Microservice] Deleting file: ${payload.publicId}`);
 
     // Delete from Cloudinary
-    await this.cloudinaryService.deleteFile(payload.publicId);
+    await this.cloudinaryService.deleteFile(payload.publicId, payload.userId);
 
     // Delete from database
-    await this.mediaFileService.deleteMediaFileByPublicId(payload.publicId);
+    await this.mediaFileService.deleteMediaFileByPublicId(
+      payload.publicId,
+      payload.userId,
+    );
 
     return {
       success: true,

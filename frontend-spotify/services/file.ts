@@ -43,8 +43,15 @@ const saveMetadata = (dto: UploadFileMetadataDto) => {
   return api.post<UploadResponseDto>(`${FILE_URL}/saveMetadata`, dto);
 };
 
+const deleteFile = (publicId: string) => {
+  return api.delete(`${FILE_URL}`, {
+    data: { publicId },
+  });
+};
+
 export const FileService = {
   getPresignedUrl,
   uploadFileToCloudinary,
   saveMetadata,
+  deleteFile,
 };

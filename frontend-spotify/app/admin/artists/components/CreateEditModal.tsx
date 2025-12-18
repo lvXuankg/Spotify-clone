@@ -21,7 +21,23 @@ import type {
   Artist,
 } from "@/interfaces/artist";
 import { useUploadFile } from "@/hooks/useUploadFile";
+import { useDeleteFile } from "@/hooks/useDeleteFile";
 import { FolderType, ResourceType } from "@/interfaces/file";
+import { DEFAULT_URLS } from "@/constants/defaultUrls";
+
+// Extract publicId từ Cloudinary URL
+// URL format: https://res.cloudinary.com/[cloud_name]/image/upload/[version]/[folder]/[publicId].[ext]
+// Chỉ lấy phần [folder]/[publicId] (sau version, trước extension)
+const extractPublicIdFromUrl = (url: string): string => {
+  try {
+    // Match: /upload/v[timestamp]/(.+?)\.[a-z]+$
+    // Lấy phần sau /v[timestamp]/ cho tới .ext
+    const match = url.match(/\/upload\/v?\d+\/(.+?)\.[a-z]+$/i);
+    return match ? match[1] : "";
+  } catch (error) {
+    return "";
+  }
+};
 
 interface CreateEditModalProps {
   isOpen: boolean;
@@ -43,14 +59,45 @@ export function CreateEditModal({
   onCancel,
 }: CreateEditModalProps) {
   const { upload, loading: uploading } = useUploadFile();
+  const { deleteFile } = useDeleteFile();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     editingArtist?.avatar_url || null
   );
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
     editingArtist?.cover_image_url || null
   );
+  const [oldAvatarUrl, setOldAvatarUrl] = useState<string | null>(
+    editingArtist?.avatar_url || null
+  );
+  const [oldCoverImageUrl, setOldCoverImageUrl] = useState<string | null>(
+    editingArtist?.cover_image_url || null
+  );
+  const [pendingDeleteAvatarUrl, setPendingDeleteAvatarUrl] = useState<
+    string | null
+  >(null);
+  const [pendingDeleteCoverUrl, setPendingDeleteCoverUrl] = useState<
+    string | null
+  >(null);
 
   const isLoading_ = isLoading || uploading;
+
+  const handleDeleteFile = (fileUrl: string, fileType: "avatar" | "cover") => {
+    // Chỉ đánh dấu xóa, không xóa ngay
+    if (fileType === "avatar") {
+      setPendingDeleteAvatarUrl(fileUrl);
+      setAvatarUrl(null);
+    } else {
+      setPendingDeleteCoverUrl(fileUrl);
+      setCoverImageUrl(null);
+    }
+  };
+
+  const handleDeleteFileFromCloudinary = async (fileUrl: string) => {
+    const publicId = extractPublicIdFromUrl(fileUrl);
+    if (publicId) {
+      await deleteFile(publicId);
+    }
+  };
 
   const handleAvatarUpload = async (file: RcFile) => {
     try {
@@ -91,10 +138,29 @@ export function CreateEditModal({
       const values = await form.validateFields();
       const submitData = {
         ...values,
-        avatar_url: avatarUrl || undefined,
-        cover_image_url: coverImageUrl || undefined,
+        avatar_url: avatarUrl || DEFAULT_URLS.AVATAR,
+        cover_image_url: coverImageUrl || DEFAULT_URLS.COVER,
       };
       onSubmit(submitData);
+
+      // ✅ Chỉ xóa files thực sự khi save thành công
+      if (pendingDeleteAvatarUrl) {
+        try {
+          await handleDeleteFileFromCloudinary(pendingDeleteAvatarUrl);
+        } catch (deleteError) {
+          console.error("Error deleting old avatar:", deleteError);
+        }
+      }
+      if (pendingDeleteCoverUrl) {
+        try {
+          await handleDeleteFileFromCloudinary(pendingDeleteCoverUrl);
+        } catch (deleteError) {
+          console.error("Error deleting old cover:", deleteError);
+        }
+      }
+
+      setPendingDeleteAvatarUrl(null);
+      setPendingDeleteCoverUrl(null);
     } catch (error) {
       console.error("Validation failed:", error);
     }
@@ -102,8 +168,11 @@ export function CreateEditModal({
 
   const handleClose = () => {
     form.resetFields();
-    setAvatarUrl(editingArtist?.avatar_url || null);
-    setCoverImageUrl(editingArtist?.cover_image_url || null);
+    // ✅ Khôi phục URLs cũ khi hủy
+    setAvatarUrl(oldAvatarUrl);
+    setCoverImageUrl(oldCoverImageUrl);
+    setPendingDeleteAvatarUrl(null);
+    setPendingDeleteCoverUrl(null);
     onCancel();
   };
 
@@ -127,12 +196,16 @@ export function CreateEditModal({
             editingArtist.displayName || editingArtist.display_name || "",
           bio: editingArtist.bio || "",
         });
-        setAvatarUrl(
-          editingArtist.avatarUrl || editingArtist.avatar_url || null
-        );
-        setCoverImageUrl(
-          editingArtist.coverImageUrl || editingArtist.cover_image_url || null
-        );
+        const avatarUrl =
+          editingArtist.avatarUrl || editingArtist.avatar_url || null;
+        const coverUrl =
+          editingArtist.coverImageUrl || editingArtist.cover_image_url || null;
+        setAvatarUrl(avatarUrl);
+        setOldAvatarUrl(avatarUrl);
+        setCoverImageUrl(coverUrl);
+        setOldCoverImageUrl(coverUrl);
+        setPendingDeleteAvatarUrl(null);
+        setPendingDeleteCoverUrl(null);
         console.log("✅ Form values set successfully");
       }, 0);
       return () => clearTimeout(timer);
@@ -141,6 +214,10 @@ export function CreateEditModal({
       form.resetFields();
       setAvatarUrl(null);
       setCoverImageUrl(null);
+      setOldAvatarUrl(null);
+      setOldCoverImageUrl(null);
+      setPendingDeleteAvatarUrl(null);
+      setPendingDeleteCoverUrl(null);
     }
   }, [isOpen, isEdit, editingArtist, form]);
 
@@ -221,8 +298,8 @@ export function CreateEditModal({
                       danger
                       size="small"
                       icon={<DeleteOutlined />}
-                      onClick={() => {
-                        setAvatarUrl(null);
+                      onClick={async () => {
+                        handleDeleteFile(avatarUrl, "avatar");
                         form.setFieldValue("avatar_url", null);
                       }}
                       style={{
@@ -276,8 +353,8 @@ export function CreateEditModal({
                       danger
                       size="small"
                       icon={<DeleteOutlined />}
-                      onClick={() => {
-                        setCoverImageUrl(null);
+                      onClick={async () => {
+                        handleDeleteFile(coverImageUrl, "cover");
                         form.setFieldValue("cover_image_url", null);
                       }}
                       style={{

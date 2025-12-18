@@ -31,9 +31,25 @@ import type { RcFile } from "antd/es/upload";
 import { Album, CreateAlbumDto, UpdateAlbumDto } from "@/interfaces/albums";
 import { AlbumServices } from "@/services/album";
 import { useUploadFile } from "@/hooks/useUploadFile";
+import { useDeleteFile } from "@/hooks/useDeleteFile";
 import { FolderType, ResourceType } from "@/interfaces/file";
 import { toast } from "sonner";
 import dayjs from "dayjs";
+import { DEFAULT_URLS } from "@/constants/defaultUrls";
+
+// Extract publicId từ Cloudinary URL
+// URL format: https://res.cloudinary.com/[cloud_name]/image/upload/[version]/[folder]/[publicId].[ext]
+// Chỉ lấy phần [folder]/[publicId] (sau version, trước extension)
+const extractPublicIdFromUrl = (url: string): string => {
+  try {
+    // Match: /upload/v[timestamp]/(.+?)\.[a-z]+$
+    // Lấy phần sau /v[timestamp]/ cho tới .ext
+    const match = url.match(/\/upload\/v?\d+\/(.+?)\.[a-z]+$/i);
+    return match ? match[1] : "";
+  } catch (error) {
+    return "";
+  }
+};
 
 interface AlbumsSectionProps {
   artistId: string;
@@ -53,7 +69,10 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
 
   // Upload file hook
   const { upload, loading: uploading } = useUploadFile();
+  const { deleteFile } = useDeleteFile();
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [oldCoverImageUrl, setOldCoverImageUrl] = useState<string | null>(null);
+  const [pendingDeleteUrl, setPendingDeleteUrl] = useState<string | null>(null);
 
   // Fetch albums
   const fetchAlbums = async (page: number, limit: number) => {
@@ -78,10 +97,25 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
     fetchAlbums(pagination.page, pagination.limit);
   }, [pagination, artistId]);
 
+  const handleDeleteFile = async (fileUrl: string) => {
+    // Chỉ đánh dấu xóa, không xóa ngay
+    setPendingDeleteUrl(fileUrl);
+    setCoverImageUrl(null);
+  };
+
+  const handleDeleteFileFromCloudinary = async (fileUrl: string) => {
+    const publicId = extractPublicIdFromUrl(fileUrl);
+    if (publicId) {
+      await deleteFile(publicId);
+    }
+  };
+
   const handleCreate = () => {
     setIsEditMode(false);
     setEditingAlbum(null);
     setCoverImageUrl(null);
+    setOldCoverImageUrl(null);
+    setPendingDeleteUrl(null);
     form.resetFields();
     setIsModalOpen(true);
   };
@@ -91,6 +125,8 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
     setEditingAlbum(album);
     const coverUrl = album.coverUrl || album.cover_url;
     setCoverImageUrl(coverUrl || null);
+    setOldCoverImageUrl(coverUrl || null);
+    setPendingDeleteUrl(null);
     form.setFieldsValue({
       title: album.title,
       releaseDate:
@@ -144,7 +180,7 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
       const values = await form.validateFields();
       const submitData = {
         title: values.title,
-        coverUrl: coverImageUrl || undefined,
+        coverUrl: coverImageUrl || DEFAULT_URLS.COVER,
         releaseDate: values.releaseDate
           ? values.releaseDate.format("YYYY-MM-DD")
           : undefined,
@@ -162,9 +198,21 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
         toast.success("Tạo album thành công!");
       }
 
+      // ✅ Chỉ xóa file thực sự khi save thành công
+      if (pendingDeleteUrl) {
+        try {
+          await handleDeleteFileFromCloudinary(pendingDeleteUrl);
+        } catch (deleteError) {
+          console.error("Error deleting old file:", deleteError);
+          // Không throw error, vì save đã thành công
+        }
+      }
+
       setIsModalOpen(false);
       form.resetFields();
       setCoverImageUrl(null);
+      setOldCoverImageUrl(null);
+      setPendingDeleteUrl(null);
       fetchAlbums(pagination.page, pagination.limit);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -277,7 +325,9 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
         onCancel={() => {
           setIsModalOpen(false);
           form.resetFields();
-          setCoverImageUrl(null);
+          // ✅ Khôi phục URL cũ khi hủy
+          setCoverImageUrl(oldCoverImageUrl);
+          setPendingDeleteUrl(null);
         }}
         onOk={handleSubmit}
         okText={isEditMode ? "Cập nhật" : "Tạo"}
@@ -317,7 +367,8 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
                       danger
                       size="small"
                       icon={<DeleteIconOutlined />}
-                      onClick={() => {
+                      onClick={async () => {
+                        await handleDeleteFile(coverImageUrl);
                         setCoverImageUrl(null);
                       }}
                       style={{

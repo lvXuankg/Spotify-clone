@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -10,6 +12,7 @@ import { FileService } from './file.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GeneratePresignedUrlDto } from './dto/presigned-url.dto';
 import { UploadFileMetadataDto } from './dto/upload-response.dto';
+import { Role } from 'src/common/enums/role.enum';
 
 @Controller('file')
 export class FileController {
@@ -25,5 +28,14 @@ export class FileController {
   @UseGuards(JwtAuthGuard)
   async saveMetadata(@Request() req: any, @Body() dto: UploadFileMetadataDto) {
     return this.fileService.saveMetadata(req.user.userId, dto);
+  }
+
+  @Delete('')
+  @UseGuards(JwtAuthGuard)
+  async deleteFile(@Body('publicId') publicId: string, @Request() req: any) {
+    return this.fileService.deleteFile(
+      publicId,
+      req.user.role === Role.ADMIN ? undefined : req.user.userId,
+    );
   }
 }

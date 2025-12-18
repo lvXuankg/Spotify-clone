@@ -146,10 +146,16 @@ export class MediaFileService {
   /**
    * Xóa file theo public_id (Cloudinary ID)
    */
-  async deleteMediaFileByPublicId(publicId: string): Promise<boolean> {
+  async deleteMediaFileByPublicId(
+    publicId: string,
+    userId?: string,
+  ): Promise<boolean> {
     try {
       const result = await this.prisma.media_files.deleteMany({
-        where: { public_id: publicId },
+        where: {
+          public_id: publicId,
+          ...(userId ? { uploaded_by: userId } : {}),
+        },
       });
 
       if (result.count > 0) {

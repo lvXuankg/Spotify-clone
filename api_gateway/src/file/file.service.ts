@@ -22,4 +22,11 @@ export class FileService {
       metadata,
     });
   }
+
+  async deleteFile(publicId: string, userId?: string) {
+    return sendMicroserviceRequest(this.client, 'file.delete', {
+      publicId,
+      userId,
+    });
+  }
 }

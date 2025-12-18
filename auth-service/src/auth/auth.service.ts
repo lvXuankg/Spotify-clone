@@ -153,6 +153,7 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: tokenRecord.users.id,
       email: tokenRecord.users.email,
+      role: tokenRecord.users.role || undefined,
     };
 
     const newAccessToken = this.jwtService.sign(payload);

@@ -175,7 +175,7 @@ export class CloudinaryService {
       });
 
       if (result.result !== 'ok') {
-        throw new BadRequestException('Xóa file trên Cloudinary thất bại');
+        this.logger.warn(`File not found on Cloudinary: ${publicId}`);
       }
 
       return {

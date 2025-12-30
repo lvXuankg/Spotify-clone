@@ -41,7 +41,7 @@ export class AlbumController {
     return this.albumService.deleteAlbum(id);
   }
 
-  @Get(':id')
+  @Get('list/:id')
   @UseGuards(JwtAuthGuard)
   async getAlbums(
     @Param('id') id: string,
@@ -49,5 +49,11 @@ export class AlbumController {
     @Query('limit') limit: number,
   ) {
     return this.albumService.getAlbums(id, page, limit);
+  }
+
+  @Get(':albumId')
+  @UseGuards(JwtAuthGuard)
+  async getAlbum(@Param('albumId') albumId: string) {
+    return this.albumService.getAlbum(albumId);
   }
 }

@@ -61,6 +61,17 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'SONG_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().songService.urls,
+          queue: getConfig().songService.queue,
+          queueOptions: {
+            durable: getConfig().songService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

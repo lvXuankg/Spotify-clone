@@ -29,6 +29,12 @@ export class AlbumService {
     });
   }
 
+  async getAlbum(albumId: string) {
+    return sendMicroserviceRequest(this.client, 'album.get-album', {
+      id: albumId,
+    });
+  }
+
   async deleteAlbum(id: string) {
     return sendMicroserviceRequest(this.client, 'album.delete-album', {
       id,

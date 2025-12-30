@@ -73,3 +73,11 @@ export interface GetAlbumsResponse {
     hasMore: boolean;
   };
 }
+
+export interface AlbumWithArtist extends Album {
+  artists: {
+    id: string;
+    display_name: string;
+    avatar_url: string;
+  };
+}

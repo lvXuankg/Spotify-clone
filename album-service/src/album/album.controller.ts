@@ -34,4 +34,9 @@ export class AlbumController {
   async deleteAlbum(@Payload() payload: { id: string }) {
     return this.albumService.delete(payload.id);
   }
+
+  @MessagePattern('album.get-album')
+  async getAlbum(@Payload() payload: { id: string }) {
+    return this.albumService.findOne(payload.id);
+  }
 }

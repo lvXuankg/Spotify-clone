@@ -101,43 +101,51 @@ export default function ArtistDetailPage() {
         style={{
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+          overflow: "hidden",
         }}
       >
-        <Row gutter={[32, 32]}>
-          {/* Phía bên trái - Avatar và Cover */}
+        {/* Cover Image Background */}
+        {currentArtist.cover_image_url && (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "300px",
+              backgroundImage: `url(${currentArtist.cover_image_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              marginBottom: "-80px",
+              zIndex: 1,
+            }}
+          >
+            {/* Overlay gradient */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%)",
+              }}
+            />
+          </div>
+        )}
+
+        <Row gutter={[32, 32]} style={{ position: "relative", zIndex: 2 }}>
+          {/* Phía bên trái - Avatar */}
           <Col xs={24} md={8}>
             <div style={{ textAlign: "center" }}>
-              {/* Cover Image */}
-              {currentArtist.cover_image_url && (
-                <div style={{ marginBottom: "16px" }}>
-                  <Image
-                    src={currentArtist.cover_image_url}
-                    alt="Cover"
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                      border: "2px solid #f0f0f0",
-                    }}
-                    preview={{
-                      mask: "Xem",
-                    }}
-                  />
-                </div>
-              )}
-
               {/* Avatar */}
               <Image
                 src={currentArtist.avatar_url}
                 alt={currentArtist.display_name}
                 style={{
-                  width: "180px",
-                  height: "180px",
-                  borderRadius: "50%",
+                  width: "200px",
+                  height: "200px",
+                  borderRadius: "12px",
                   objectFit: "cover",
-                  border: "4px solid #667eea",
-                  marginBottom: "16px",
+                  border: "6px solid #fff",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)",
+                  marginBottom: "24px",
                 }}
                 preview={{
                   mask: "Xem",
@@ -145,23 +153,38 @@ export default function ArtistDetailPage() {
               />
 
               {/* Name */}
-              <h2
+              <h1
                 style={{
-                  margin: "12px 0 0 0",
-                  fontSize: "24px",
+                  margin: "12px 0 8px 0",
+                  fontSize: "32px",
                   fontWeight: 700,
                   color: "#fff",
                 }}
               >
                 {currentArtist.display_name}
-              </h2>
+              </h1>
+
+              {/* Bio */}
+              {currentArtist.bio && (
+                <p
+                  style={{
+                    color: "#ccc",
+                    fontSize: "14px",
+                    marginBottom: "24px",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {currentArtist.bio}
+                </p>
+              )}
 
               {/* Action Buttons */}
-              <Space style={{ marginTop: "16px" }} wrap>
+              <Space style={{ marginTop: "24px" }} wrap>
                 <Button
                   type="primary"
                   icon={<EditOutlined />}
                   onClick={() => router.push(`/admin/artists?edit=${artistId}`)}
+                  size="large"
                 >
                   Chỉnh sửa
                 </Button>

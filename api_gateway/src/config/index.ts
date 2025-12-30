@@ -6,6 +6,7 @@ export interface AppConfig {
   fileService: FileRabbitMQ;
   artistService: ArtistRabbitMQ;
   albumService: AlbumRabbitMQ;
+  songService: SongRabbitMQ;
   http: HttpConfig;
 }
 
@@ -34,6 +35,12 @@ export interface FileRabbitMQ {
 }
 
 export interface AlbumRabbitMQ {
+  urls: string[];
+  queue: string;
+  durable: boolean;
+}
+
+export interface SongRabbitMQ {
   urls: string[];
   queue: string;
   durable: boolean;
@@ -86,6 +93,14 @@ export const getConfig = (): AppConfig => ({
     ],
     queue: process.env.ALBUM_SERVICE_RABBITMQ_QUEUE || 'album_queue',
     durable: process.env.ALBUM_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+  },
+  songService: {
+    urls: [
+      process.env.SONG_SERVICE_RABBITMQ_URL ||
+        'amqp://admin:1234@localhost:5672',
+    ],
+    queue: process.env.SONG_SERVICE_RABBITMQ_QUEUE || 'song_queue',
+    durable: process.env.SONG_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
   },
   http: {
     port: parseInt(process.env.PORT || '8080', 10),

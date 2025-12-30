@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   Table,
@@ -26,6 +27,7 @@ import {
   LoadingOutlined,
   UploadOutlined,
   DeleteOutlined as DeleteIconOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { RcFile } from "antd/es/upload";
 import { Album, CreateAlbumDto, UpdateAlbumDto } from "@/interfaces/albums";
@@ -56,6 +58,7 @@ interface AlbumsSectionProps {
 }
 
 export function AlbumsSection({ artistId }: AlbumsSectionProps) {
+  const router = useRouter();
   const { modal } = App.useApp();
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(false);
@@ -255,6 +258,15 @@ export function AlbumsSection({ artistId }: AlbumsSectionProps) {
       width: 120,
       render: (_: any, record: Album) => (
         <Space size="small">
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() =>
+              router.push(`/admin/artists/${artistId}/albums/${record.id}`)
+            }
+            title="Chi tiết"
+          />
           <Button
             type="text"
             size="small"

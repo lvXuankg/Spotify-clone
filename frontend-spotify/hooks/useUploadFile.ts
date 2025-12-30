@@ -56,13 +56,15 @@ export function useUploadFile() {
         publicId: cloudinaryData.public_id,
         url: cloudinaryData.url,
         secureUrl: cloudinaryData.secure_url,
-        format: cloudinaryData.format,
-        resourceType: cloudinaryData.resource_type,
+        format: cloudinaryData.format || "unknown",
+        resourceType:
+          cloudinaryData.resource_type || options.resourceType || "raw",
         bytes: cloudinaryData.bytes,
-        width: cloudinaryData.width,
-        height: cloudinaryData.height,
         duration: cloudinaryData.duration,
         createdAt: cloudinaryData.created_at,
+
+        ...(cloudinaryData.width && { width: cloudinaryData.width }),
+        ...(cloudinaryData.height && { height: cloudinaryData.height }),
       };
 
       const saveRes = await FileService.saveMetadata(metadata);

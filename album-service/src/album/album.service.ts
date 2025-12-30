@@ -110,4 +110,21 @@ export class AlbumService {
 
     return true;
   }
+
+  async findOne(id: string) {
+    return this.prisma.albums.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        artists: {
+          select: {
+            id: true,
+            display_name: true,
+            avatar_url: true,
+          },
+        },
+      },
+    });
+  }
 }

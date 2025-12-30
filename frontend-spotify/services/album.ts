@@ -3,6 +3,7 @@ import {
   CreateAlbumDto,
   UpdateAlbumDto,
   GetAlbumsResponse,
+  AlbumWithArtist,
 } from "@/interfaces/albums";
 import api from "@/lib/axios";
 
@@ -22,8 +23,12 @@ const deleteAlbum = (id: string) => {
 
 const getAlbums = (artistId: string, page: number = 1, limit: number = 10) => {
   return api.get<GetAlbumsResponse>(
-    `${ALBUM_URL}/${artistId}?page=${page}&limit=${limit}`
+    `${ALBUM_URL}/list/${artistId}?page=${page}&limit=${limit}`
   );
+};
+
+const getAlbum = (albumId: string) => {
+  return api.get<AlbumWithArtist>(`${ALBUM_URL}/${albumId}`);
 };
 
 export const AlbumServices = {
@@ -31,4 +36,5 @@ export const AlbumServices = {
   updateAlbum,
   deleteAlbum,
   getAlbums,
+  getAlbum,
 };

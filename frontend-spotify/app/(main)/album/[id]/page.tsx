@@ -2,143 +2,213 @@
 
 import { memo, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { albumActions } from "@/store/slices/album";
-import { useParams } from "next/navigation";
-import { Row, Col, Button, Space, Table, Empty, Skeleton, Image } from "antd";
+import {
+  albumActions,
+  selectCurrentAlbum,
+  selectCurrentAlbumLoading,
+  selectAlbumSongs,
+  selectAlbumSongsLoading,
+} from "@/store/slices/album";
+import { useParams, useRouter } from "next/navigation";
+import { Row, Col, Button, Empty, Skeleton, Image, Table } from "antd";
 import PageHeader from "@/components/layout/PageHeader";
-import { PlayCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import tinycolor from "tinycolor2";
+import {
+  PlayCircleFilled,
+  CalendarOutlined,
+  ClockCircleOutlined,
+} from "@ant-design/icons";
+import type { Song } from "@/interfaces/song";
+import styles from "./page.module.css";
+
+const DEFAULT_COVER = "https://misc.scdn.co/liked-songs/liked-songs-640.png";
+
+// Helper function to format duration
+const formatDuration = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
 
 const AlbumPage = memo(() => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const params = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const albumId = params.id as string;
-  const album = useAppSelector((state) => state.album.album);
-  const tracks = useAppSelector((state) => state.album.tracks);
-  const loading = useAppSelector((state) => state.album.loading);
+  const album = useAppSelector(selectCurrentAlbum);
+  const loading = useAppSelector(selectCurrentAlbumLoading);
+  const songs = useAppSelector(selectAlbumSongs);
+  const songsLoading = useAppSelector(selectAlbumSongsLoading);
 
   useEffect(() => {
     if (albumId) {
-      dispatch(albumActions.fetchAlbum(albumId));
-      dispatch(albumActions.fetchAlbumTracks(albumId));
+      dispatch(albumActions.fetchAlbumDetail(albumId));
+      dispatch(albumActions.fetchAlbumSongs(albumId));
     }
+    return () => {
+      dispatch(albumActions.clearCurrentAlbum());
+    };
   }, [albumId, dispatch]);
 
-  if (loading) {
-    return <Skeleton active count={5} />;
-  }
-
-  if (!album) {
-    return <Empty description="Album not found" />;
-  }
-
-  const dominantColor = album.images[0]?.url
-    ? tinycolor(album.images[0].url).darken(2).toRgbString()
-    : "#1db954";
-
+  // Table columns for songs
   const columns = [
     {
       title: "#",
       dataIndex: "track_number",
       key: "track_number",
       width: 50,
-    },
-    {
-      title: "Song",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string) => (
-        <span style={{ color: "#ffffff" }}>{text}</span>
+      render: (trackNumber: number | null, _record: Song, index: number) => (
+        <span className={styles.trackNumber}>{trackNumber ?? index + 1}</span>
       ),
     },
     {
-      title: "Duration",
-      dataIndex: "duration_ms",
-      key: "duration_ms",
-      width: 100,
-      render: (ms: number) => {
-        const minutes = Math.floor(ms / 60000);
-        const seconds = ((ms % 60000) / 1000).toFixed(0);
-        return (
-          <span style={{ color: "#b3b3b3" }}>
-            {minutes}:{parseInt(seconds as string) < 10 ? "0" : ""}
-            {seconds}
-          </span>
-        );
-      },
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+      render: (title: string, record: Song) => (
+        <div className={styles.songInfo}>
+          <span className={styles.songTitle}>{title}</span>
+          {record.is_explicit && (
+            <span className={styles.explicitBadge}>E</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: <ClockCircleOutlined />,
+      dataIndex: "duration_seconds",
+      key: "duration_seconds",
+      width: 80,
+      align: "right" as const,
+      render: (duration: number) => (
+        <span className={styles.duration}>{formatDuration(duration)}</span>
+      ),
     },
   ];
 
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <Skeleton active avatar paragraph={{ rows: 4 }} />
+      </div>
+    );
+  }
+
+  if (!album) {
+    return (
+      <div className={styles.emptyContainer}>
+        <Empty description="Album not found" />
+        <Button type="primary" onClick={() => router.push("/")}>
+          Go Home
+        </Button>
+      </div>
+    );
+  }
+
+  const dominantColor = "#1a1a2e";
+  const coverUrl = album.cover_url || DEFAULT_COVER;
+  const releaseYear = album.release_date
+    ? new Date(album.release_date).getFullYear()
+    : null;
+
   return (
-    <div ref={containerRef} style={{ height: "100%", overflowY: "auto" }}>
+    <div ref={containerRef} className={styles.container}>
       <PageHeader
         color={dominantColor}
         container={containerRef}
         sectionContainer={sectionRef}
       >
-        <Row gutter={[30, 30]} align="middle">
+        <Row gutter={[24, 24]} align="bottom">
           <Col xs={24} sm={6}>
-            <Image
-              src={album.images[0]?.url}
-              alt={album.name}
-              preview={false}
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-              }}
-            />
+            <div className={styles.coverWrapper}>
+              <Image
+                src={coverUrl}
+                alt={album.title}
+                preview={false}
+                className={styles.coverImage}
+                fallback={DEFAULT_COVER}
+              />
+            </div>
           </Col>
           <Col xs={24} sm={18}>
-            <div>
-              <span style={{ color: "#b3b3b3" }}>ALBUM</span>
-              <h1
-                style={{
-                  fontSize: "48px",
-                  fontWeight: "bold",
-                  color: "#ffffff",
-                  margin: "16px 0",
-                }}
-              >
-                {album.name}
-              </h1>
-              <Space>
-                <span style={{ color: "#ffffff" }}>
-                  {album.artists.map((a) => a.name).join(", ")}
-                </span>
-                <span style={{ color: "#b3b3b3" }}>
-                  {album.release_date?.split("-")[0]}
-                </span>
-                <span style={{ color: "#b3b3b3" }}>
-                  {album.total_tracks} songs
-                </span>
-              </Space>
+            <div className={styles.albumInfo}>
+              <span className={styles.albumType}>{album.type || "Album"}</span>
+              <h1 className={styles.title}>{album.title}</h1>
+              <div className={styles.meta}>
+                {album.artists && (
+                  <span className={styles.artistName}>
+                    {album.artists.display_name}
+                  </span>
+                )}
+                {releaseYear && (
+                  <>
+                    <span className={styles.separator}>•</span>
+                    <span className={styles.releaseYear}>
+                      <CalendarOutlined /> {releaseYear}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </Col>
         </Row>
       </PageHeader>
 
-      <div ref={sectionRef} style={{ padding: "30px" }}>
-        <Space style={{ marginBottom: "20px" }}>
-          <Button type="primary" icon={<PlayCircleOutlined />} size="large">
-            Play
-          </Button>
-          <Button type="dashed" icon={<PlusOutlined />} size="large">
-            Add to Playlist
-          </Button>
-        </Space>
+      <div ref={sectionRef} className={styles.content}>
+        <div className={styles.actions}>
+          <Button
+            type="primary"
+            shape="circle"
+            size="large"
+            icon={<PlayCircleFilled />}
+            className={styles.playButton}
+          />
+        </div>
 
-        <Table
-          columns={columns}
-          dataSource={tracks}
-          rowKey="id"
-          style={{
-            backgroundColor: "transparent",
-          }}
-          pagination={false}
-        />
+        {/* Songs Table */}
+        <div className={styles.songsSection}>
+          <Table
+            columns={columns}
+            dataSource={songs}
+            rowKey="id"
+            pagination={false}
+            loading={songsLoading}
+            className={styles.songsTable}
+            showHeader={true}
+            locale={{ emptyText: "Chưa có bài hát nào" }}
+            rowClassName={styles.songRow}
+          />
+        </div>
+
+        {/* Album Details */}
+        <div className={styles.albumDetails}>
+          <div className={styles.detailsGrid}>
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Ngày phát hành</span>
+              <span className={styles.detailValue}>
+                {album.release_date
+                  ? new Date(album.release_date).toLocaleDateString("vi-VN", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Chưa rõ"}
+              </span>
+            </div>
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Số bài hát</span>
+              <span className={styles.detailValue}>{songs.length} bài hát</span>
+            </div>
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Loại</span>
+              <span className={styles.detailValue}>
+                {album.type || "Album"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

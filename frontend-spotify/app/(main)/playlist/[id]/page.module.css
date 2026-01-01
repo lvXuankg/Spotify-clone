@@ -206,6 +206,21 @@
   font-size: 14px;
 }
 
+/* Remove Button */
+.removeButton {
+  color: #b3b3b3;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  color: #ff4d4f;
+}
+
+.table :global(.ant-table-row):hover .removeButton {
+  opacity: 1;
+}
+
 /* Empty Tracks */
 .emptyTracks {
   display: flex;

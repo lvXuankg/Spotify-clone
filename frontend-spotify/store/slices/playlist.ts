@@ -25,6 +25,7 @@ interface PlaylistState {
   updateLoading: boolean;
   deleteLoading: boolean;
   addSongLoading: boolean;
+  removeSongLoading: boolean;
 }
 
 const initialState: PlaylistState = {
@@ -40,6 +41,7 @@ const initialState: PlaylistState = {
   updateLoading: false,
   deleteLoading: false,
   addSongLoading: false,
+  removeSongLoading: false,
 };
 
 // ===================== Async Thunks =====================
@@ -159,6 +161,24 @@ export const addSongToPlaylist = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to add song to playlist"
+      );
+    }
+  }
+);
+
+// Remove song from playlist
+export const removeSongFromPlaylist = createAsyncThunk(
+  "playlist/removeSong",
+  async (
+    { playlistId, songId }: { playlistId: string; songId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await playlistService.removeSongFromPlaylist(playlistId, songId);
+      return { playlistId, songId };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to remove song from playlist"
       );
     }
   }
@@ -326,6 +346,31 @@ const playlistSlice = createSlice({
       .addCase(addSongToPlaylist.rejected, (state) => {
         state.addSongLoading = false;
       });
+
+    // Remove song from playlist
+    builder
+      .addCase(removeSongFromPlaylist.pending, (state) => {
+        state.removeSongLoading = true;
+      })
+      .addCase(removeSongFromPlaylist.fulfilled, (state, action) => {
+        state.removeSongLoading = false;
+        // Remove song from current playlist
+        if (state.currentPlaylist?.id === action.payload.playlistId) {
+          state.currentPlaylist.songs = state.currentPlaylist.songs.filter(
+            (s) => s.id !== action.payload.songId
+          );
+        }
+        // Decrement song count in myPlaylists
+        const index = state.myPlaylists.findIndex(
+          (p) => p.id === action.payload.playlistId
+        );
+        if (index !== -1 && state.myPlaylists[index].song_count > 0) {
+          state.myPlaylists[index].song_count -= 1;
+        }
+      })
+      .addCase(removeSongFromPlaylist.rejected, (state) => {
+        state.removeSongLoading = false;
+      });
   },
 });
 
@@ -343,6 +388,7 @@ export const selectPlaylistOperationLoading = (state: RootState) => ({
   update: state.playlist.updateLoading,
   delete: state.playlist.deleteLoading,
   addSong: state.playlist.addSongLoading,
+  removeSong: state.playlist.removeSongLoading,
 });
 
 export const playlistActions = {
@@ -354,6 +400,7 @@ export const playlistActions = {
   updatePlaylistImage,
   deletePlaylist,
   addSongToPlaylist,
+  removeSongFromPlaylist,
 };
 
 export default playlistSlice.reducer;

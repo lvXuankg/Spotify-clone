@@ -40,4 +40,18 @@ export class AlbumService {
       id,
     });
   }
+
+  async getAllAlbums(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: 'created_at' | 'updated_at' = 'created_at',
+    order: 'asc' | 'desc' = 'desc',
+  ) {
+    return sendMicroserviceRequest(this.client, 'album.get-all', {
+      page,
+      limit,
+      sortBy,
+      order,
+    });
+  }
 }

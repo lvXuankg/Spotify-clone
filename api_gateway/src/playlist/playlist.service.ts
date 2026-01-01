@@ -44,6 +44,18 @@ export class PlaylistService {
     });
   }
 
+  async removeSongFromPlaylist(
+    userId: string,
+    playlistId: string,
+    songId: string,
+  ) {
+    return sendMicroserviceRequest(this.client, 'playlist.remove-song', {
+      userId,
+      playlistId,
+      songId,
+    });
+  }
+
   async getPlaylistDetail(userId: string, playlistId: string) {
     return sendMicroserviceRequest(this.client, 'playlist.get-detail', {
       userId,
@@ -54,6 +66,20 @@ export class PlaylistService {
   async getMyPlaylists(userId: string) {
     return sendMicroserviceRequest(this.client, 'playlist.get-my-playlist', {
       userId,
+    });
+  }
+
+  async getPublicPlaylists(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: 'created_at' | 'updated_at' = 'created_at',
+    order: 'asc' | 'desc' = 'desc',
+  ) {
+    return sendMicroserviceRequest(this.client, 'playlist.get-public', {
+      page,
+      limit,
+      sortBy,
+      order,
     });
   }
 }

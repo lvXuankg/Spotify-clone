@@ -23,6 +23,7 @@ import genreReducer from "./slices/genre";
 import yourLibraryReducer from "./slices/yourLibrary";
 import spotifyReducer from "./slices/spotify";
 import languageReducer from "./slices/language";
+import viewAllReducer from "./slices/viewAll";
 
 const persistConfig = {
   key: "root",
@@ -47,6 +48,7 @@ const appReducer = combineReducers({
   yourLibrary: yourLibraryReducer,
   spotify: spotifyReducer,
   language: languageReducer,
+  viewAll: viewAllReducer,
 });
 
 // Root reducer - xử lý reset state khi logout trước khi persist

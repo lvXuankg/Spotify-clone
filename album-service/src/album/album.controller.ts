@@ -39,4 +39,22 @@ export class AlbumController {
   async getAlbum(@Payload() payload: { id: string }) {
     return this.albumService.findOne(payload.id);
   }
+
+  @MessagePattern('album.get-all')
+  async getAllAlbums(
+    @Payload()
+    payload: {
+      page: number;
+      limit: number;
+      sortBy: 'created_at' | 'updated_at';
+      order: 'asc' | 'desc';
+    },
+  ) {
+    return this.albumService.findAll(
+      payload.page,
+      payload.limit,
+      payload.sortBy,
+      payload.order,
+    );
+  }
 }

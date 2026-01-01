@@ -67,3 +67,30 @@ export interface UpdatePlaylist {
   coverUrl?: string;
   isPublic?: boolean;
 }
+
+export interface PublicPlaylistItem {
+  id: string;
+  title: string;
+  description: string | null;
+  cover_url: string | null;
+  is_public: boolean;
+  song_count: number;
+  created_at: string;
+  updated_at: string;
+  owner: {
+    id: string;
+    name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
+export interface GetPublicPlaylistsResponse {
+  data: PublicPlaylistItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}

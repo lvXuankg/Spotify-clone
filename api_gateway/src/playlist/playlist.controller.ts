@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -65,10 +66,34 @@ export class PlaylistController {
     );
   }
 
+  @Delete(':playlistId/song/:songId')
+  @UseGuards(JwtAuthGuard)
+  async removeSongFromPlaylist(
+    @Request() req: any,
+    @Param('playlistId') playlistId: string,
+    @Param('songId') songId: string,
+  ) {
+    return this.playlistService.removeSongFromPlaylist(
+      req.user.userId,
+      playlistId,
+      songId,
+    );
+  }
+
   @Get('get-my-playlists')
   @UseGuards(JwtAuthGuard)
   async getMyPlaylist(@Request() req: any) {
     return this.playlistService.getMyPlaylists(req.user.userId);
+  }
+
+  @Get('public')
+  async getPublicPlaylists(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('sortBy') sortBy: 'created_at' | 'updated_at' = 'created_at',
+    @Query('order') order: 'asc' | 'desc' = 'desc',
+  ) {
+    return this.playlistService.getPublicPlaylists(page, limit, sortBy, order);
   }
 
   @Get(':playlistId')

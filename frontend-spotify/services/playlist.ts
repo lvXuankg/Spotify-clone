@@ -4,6 +4,7 @@ import {
   PlaylistDetail,
   PlaylistSimple,
   UpdatePlaylist,
+  GetPublicPlaylistsResponse,
 } from "@/interfaces/playlists";
 import api from "@/lib/axios";
 
@@ -33,6 +34,10 @@ const addSongToPlaylist = (playlistId: string, songId: string) => {
   );
 };
 
+const removeSongFromPlaylist = (playlistId: string, songId: string) => {
+  return api.delete(`${PLAYLIST_URL}/${playlistId}/song/${songId}`);
+};
+
 const getDetailPlaylist = (playlistId: string) => {
   return api.get<PlaylistDetail>(`${PLAYLIST_URL}/${playlistId}`);
 };
@@ -41,12 +46,25 @@ const getMyPlaylist = () => {
   return api.get<PlaylistSimple[]>(`${PLAYLIST_URL}/get-my-playlists`);
 };
 
+const getPublicPlaylists = (
+  page: number = 1,
+  limit: number = 10,
+  sortBy: "created_at" | "updated_at" = "created_at",
+  order: "asc" | "desc" = "desc"
+) => {
+  return api.get<GetPublicPlaylistsResponse>(
+    `${PLAYLIST_URL}/public?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`
+  );
+};
+
 export const playlistService = {
   createPlaylistDefault,
   updatePlaylist,
   updateImagePlaylist,
   deletePlaylist,
   addSongToPlaylist,
+  removeSongFromPlaylist,
   getDetailPlaylist,
   getMyPlaylist,
+  getPublicPlaylists,
 };

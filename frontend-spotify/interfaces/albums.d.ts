@@ -81,3 +81,29 @@ export interface AlbumWithArtist extends Album {
     avatar_url: string;
   };
 }
+
+export interface AlbumListItem {
+  id: string;
+  title: string;
+  cover_url: string | null;
+  type: AlbumType;
+  release_date: string | null;
+  created_at: string;
+  updated_at: string;
+  artist: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+  } | null;
+}
+
+export interface GetAllAlbumsResponse {
+  data: AlbumListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}

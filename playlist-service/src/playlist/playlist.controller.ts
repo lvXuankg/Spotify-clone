@@ -45,6 +45,23 @@ export class PlaylistController {
     return this.playlistService.addSongToPlaylist(userId, playlistId, songId);
   }
 
+  @MessagePattern('playlist.remove-song')
+  async removeSongFromPlaylist(
+    @Payload()
+    payload: {
+      userId: string;
+      playlistId: string;
+      songId: string;
+    },
+  ) {
+    const { userId, playlistId, songId } = payload;
+    return this.playlistService.removeSongFromPlaylist(
+      userId,
+      playlistId,
+      songId,
+    );
+  }
+
   @MessagePattern('playlist.get-detail')
   async getPlaylist(
     @Payload() payload: { userId: string; playlistId: string },
@@ -58,5 +75,23 @@ export class PlaylistController {
   @MessagePattern('playlist.get-my-playlist')
   async getMyPlaylists(@Payload() payload: { userId: string }) {
     return this.playlistService.getMyPlaylists(payload.userId);
+  }
+
+  @MessagePattern('playlist.get-public')
+  async getPublicPlaylists(
+    @Payload()
+    payload: {
+      page: number;
+      limit: number;
+      sortBy: 'created_at' | 'updated_at';
+      order: 'asc' | 'desc';
+    },
+  ) {
+    return this.playlistService.getPublicPlaylists(
+      payload.page,
+      payload.limit,
+      payload.sortBy,
+      payload.order,
+    );
   }
 }

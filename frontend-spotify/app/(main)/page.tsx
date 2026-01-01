@@ -2,64 +2,95 @@
 
 import { memo, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { homeActions } from "@/store/slices/home";
-import { Col, Row, Skeleton, Empty } from "antd";
+import {
+  homeActions,
+  selectLatestAlbums,
+  selectLatestAlbumsLoading,
+  selectRecentlyUpdatedAlbums,
+  selectRecentlyUpdatedAlbumsLoading,
+  selectLatestPlaylists,
+  selectLatestPlaylistsLoading,
+  selectRecentlyUpdatedPlaylists,
+  selectRecentlyUpdatedPlaylistsLoading,
+} from "@/store/slices/home";
 import PageHeader from "@/components/layout/PageHeader";
-import FeaturedPlaylists from "./components/FeaturedPlaylists";
-import RecentlyPlayed from "./components/RecentlyPlayed";
-import "@/styles/home.scss";
+import { MediaSection } from "./components/MediaSection";
+import styles from "./page.module.css";
 
 const Home = memo(() => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const loading = useAppSelector((state) => state.home.loading);
-  const featuredPlaylists = useAppSelector(
-    (state) => state.home.featuredPlaylists
+  // Selectors
+  const latestAlbums = useAppSelector(selectLatestAlbums);
+  const latestAlbumsLoading = useAppSelector(selectLatestAlbumsLoading);
+  const recentlyUpdatedAlbums = useAppSelector(selectRecentlyUpdatedAlbums);
+  const recentlyUpdatedAlbumsLoading = useAppSelector(
+    selectRecentlyUpdatedAlbumsLoading
+  );
+  const latestPlaylists = useAppSelector(selectLatestPlaylists);
+  const latestPlaylistsLoading = useAppSelector(selectLatestPlaylistsLoading);
+  const recentlyUpdatedPlaylists = useAppSelector(
+    selectRecentlyUpdatedPlaylists
+  );
+  const recentlyUpdatedPlaylistsLoading = useAppSelector(
+    selectRecentlyUpdatedPlaylistsLoading
   );
 
   useEffect(() => {
-    dispatch(homeActions.fetchFeaturedPlaylists());
-    dispatch(homeActions.fetchRecentlyPlayed());
+    dispatch(homeActions.fetchLatestAlbums(10));
+    dispatch(homeActions.fetchRecentlyUpdatedAlbums(10));
+    dispatch(homeActions.fetchLatestPlaylists(10));
+    dispatch(homeActions.fetchRecentlyUpdatedPlaylists(10));
   }, [dispatch]);
 
   return (
-    <div ref={containerRef} style={{ height: "100%", overflowY: "auto" }}>
+    <div ref={containerRef} className={styles.container}>
       <PageHeader
         color="#121212"
         container={containerRef}
         sectionContainer={sectionRef}
       >
-        <h1 style={{ margin: 0, fontSize: "32px", fontWeight: "bold" }}>
-          Welcome back! 🎵
-        </h1>
+        <h1 className={styles.welcomeTitle}>Welcome back! 🎵</h1>
       </PageHeader>
 
-      <div ref={sectionRef} style={{ padding: "30px" }}>
-        <Row gutter={[16, 32]}>
-          {/* Recently Played */}
-          <Col span={24}>
-            <Skeleton loading={loading} active>
-              <RecentlyPlayed />
-            </Skeleton>
-          </Col>
+      <div ref={sectionRef} className={styles.content}>
+        {/* Latest Albums */}
+        <MediaSection
+          title="Mới phát hành"
+          items={latestAlbums}
+          loading={latestAlbumsLoading}
+          type="album"
+          viewAllUrl="/albums?sort=latest"
+        />
 
-          {/* Featured Playlists */}
-          <Col span={24}>
-            {loading ? (
-              <>
-                <Skeleton active />
-                <Skeleton active />
-                <Skeleton active />
-              </>
-            ) : featuredPlaylists.length > 0 ? (
-              <FeaturedPlaylists />
-            ) : (
-              <Empty description="No playlists found" />
-            )}
-          </Col>
-        </Row>
+        {/* Recently Updated Albums */}
+        <MediaSection
+          title="Album mới cập nhật"
+          items={recentlyUpdatedAlbums}
+          loading={recentlyUpdatedAlbumsLoading}
+          type="album"
+          viewAllUrl="/albums?sort=updated"
+        />
+
+        {/* Latest Playlists */}
+        <MediaSection
+          title="Playlist mới nhất"
+          items={latestPlaylists}
+          loading={latestPlaylistsLoading}
+          type="playlist"
+          viewAllUrl="/playlists?sort=latest"
+        />
+
+        {/* Recently Updated Playlists */}
+        <MediaSection
+          title="Playlist mới cập nhật"
+          items={recentlyUpdatedPlaylists}
+          loading={recentlyUpdatedPlaylistsLoading}
+          type="playlist"
+          viewAllUrl="/playlists?sort=updated"
+        />
       </div>
     </div>
   );

@@ -51,6 +51,16 @@ export class AlbumController {
     return this.albumService.getAlbums(id, page, limit);
   }
 
+  @Get()
+  async getAllAlbums(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('sortBy') sortBy: 'created_at' | 'updated_at' = 'created_at',
+    @Query('order') order: 'asc' | 'desc' = 'desc',
+  ) {
+    return this.albumService.getAllAlbums(page, limit, sortBy, order);
+  }
+
   @Get(':albumId')
   @UseGuards(JwtAuthGuard)
   async getAlbum(@Param('albumId') albumId: string) {

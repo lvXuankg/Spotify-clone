@@ -178,6 +178,23 @@ const PlaylistDetailPage = memo(() => {
     }
   };
 
+  // Handle remove song from playlist
+  const handleRemoveSong = async (songId: string) => {
+    if (!playlist) return;
+
+    try {
+      await dispatch(
+        playlistActions.removeSongFromPlaylist({
+          playlistId: playlist.id,
+          songId,
+        })
+      ).unwrap();
+      success("Song removed from playlist");
+    } catch (err) {
+      showError("Failed to remove song from playlist");
+    }
+  };
+
   // Table columns
   const columns: TableColumnsType<PlaylistSong> = [
     {
@@ -211,6 +228,27 @@ const PlaylistDetailPage = memo(() => {
         <span className={styles.duration}>{formatDuration(duration)}</span>
       ),
     },
+    ...(isOwner
+      ? [
+          {
+            title: "",
+            key: "actions",
+            width: 50,
+            render: (_: any, record: PlaylistSong) => (
+              <Button
+                type="text"
+                icon={<DeleteOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveSong(record.id);
+                }}
+                className={styles.removeButton}
+                loading={operationLoading.removeSong}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 
   // Dropdown menu items

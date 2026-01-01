@@ -94,6 +94,31 @@ export class PlaylistService {
     });
   }
 
+  async removeSongFromPlaylist(
+    userId: string,
+    playlistId: string,
+    songId: string,
+  ) {
+    await this.checkIfBelongUser(userId, playlistId);
+
+    const playlistSong = await this.prisma.playlist_songs.findFirst({
+      where: {
+        playlist_id: playlistId,
+        song_id: songId,
+      },
+    });
+
+    if (!playlistSong) {
+      throw new NotFoundException('Bài hát không có trong playlist');
+    }
+
+    return this.prisma.playlist_songs.delete({
+      where: {
+        id: playlistSong.id,
+      },
+    });
+  }
+
   async getOnePlaylist(userId: string, playlistId: string) {
     const playlist = await this.prisma.playlists.findUnique({
       where: { id: playlistId },
@@ -179,5 +204,84 @@ export class PlaylistService {
       song_count: pl._count.playlist_songs,
       updated_at: pl.updated_at,
     }));
+  }
+
+  async getPublicPlaylists(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: 'created_at' | 'updated_at' = 'created_at',
+    order: 'asc' | 'desc' = 'desc',
+  ) {
+    const safePage = Math.max(page, 1);
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+    const [playlists, total] = await this.prisma.$transaction([
+      this.prisma.playlists.findMany({
+        where: {
+          is_public: true,
+        },
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          cover_url: true,
+          is_public: true,
+          created_at: true,
+          updated_at: true,
+          users: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              avatar_url: true,
+            },
+          },
+          _count: {
+            select: {
+              playlist_songs: true,
+            },
+          },
+        },
+        orderBy: {
+          [sortBy]: order,
+        },
+      }),
+      this.prisma.playlists.count({
+        where: {
+          is_public: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / safeLimit);
+
+    return {
+      data: playlists.map((pl) => ({
+        id: pl.id,
+        title: pl.title,
+        description: pl.description,
+        cover_url: pl.cover_url,
+        is_public: pl.is_public,
+        song_count: pl._count.playlist_songs,
+        created_at: pl.created_at,
+        updated_at: pl.updated_at,
+        owner: pl.users
+          ? {
+              id: pl.users.id,
+              name: pl.users.name || pl.users.username,
+              avatar_url: pl.users.avatar_url,
+            }
+          : null,
+      })),
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasMore: safePage < totalPages,
+      },
+    };
   }
 }

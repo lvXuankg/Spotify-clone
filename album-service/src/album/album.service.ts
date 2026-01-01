@@ -127,4 +127,62 @@ export class AlbumService {
       },
     });
   }
+
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: 'created_at' | 'updated_at' = 'created_at',
+    order: 'asc' | 'desc' = 'desc',
+  ) {
+    const safePage = Math.max(page, 1);
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+    const [albums, total] = await this.prisma.$transaction([
+      this.prisma.albums.findMany({
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+        include: {
+          artists: {
+            select: {
+              id: true,
+              display_name: true,
+              avatar_url: true,
+            },
+          },
+        },
+        orderBy: {
+          [sortBy]: order,
+        },
+      }),
+      this.prisma.albums.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / safeLimit);
+
+    return {
+      data: albums.map((album) => ({
+        id: album.id,
+        title: album.title,
+        cover_url: album.cover_url,
+        type: album.type,
+        release_date: album.release_date,
+        created_at: album.created_at,
+        updated_at: album.updated_at,
+        artist: album.artists
+          ? {
+              id: album.artists.id,
+              display_name: album.artists.display_name,
+              avatar_url: album.artists.avatar_url,
+            }
+          : null,
+      })),
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasMore: safePage < totalPages,
+      },
+    };
+  }
 }

@@ -1,134 +1,218 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { AlbumServices } from "@/services/album";
+import { playlistService } from "@/services/playlist";
+import type { AlbumListItem } from "@/interfaces/albums";
+import type { PublicPlaylistItem } from "@/interfaces/playlists";
+import type { RootState } from "../store";
 
-interface Image {
-  url: string;
-  height?: number;
-  width?: number;
-}
-
-interface Artist {
-  id: string;
-  name: string;
-}
-
-interface Album {
-  id: string;
-  name: string;
-  images?: Image[];
-  release_date?: string;
-}
-
-interface Owner {
-  id: string;
-  display_name: string;
-}
-
-interface Playlist {
-  id: string;
-  name: string;
-  description?: string;
-  images: Image[];
-  owner?: Owner;
-  // TODO: Thêm các field khác
-}
-
-interface Track {
-  id: string;
-  name: string;
-  artists?: Artist[];
-  album?: Album;
-  images?: Image[];
-  // TODO: Thêm các field khác
-}
-
-interface RecentlyPlayedItem extends Track {
-  // Can be Track, Album, or Playlist
-  owner?: Owner;
-  release_date?: string;
-}
-
+// ===================== Types =====================
 interface HomeState {
-  loading: boolean;
-  error?: string;
-  featuredPlaylists: Playlist[];
-  recentlyPlayed: RecentlyPlayedItem[];
-  // TODO: Thêm các field khác
+  // Albums
+  latestAlbums: AlbumListItem[];
+  latestAlbumsLoading: boolean;
+  recentlyUpdatedAlbums: AlbumListItem[];
+  recentlyUpdatedAlbumsLoading: boolean;
+
+  // Playlists
+  latestPlaylists: PublicPlaylistItem[];
+  latestPlaylistsLoading: boolean;
+  recentlyUpdatedPlaylists: PublicPlaylistItem[];
+  recentlyUpdatedPlaylistsLoading: boolean;
+
+  // General
+  error: string | null;
 }
 
 const initialState: HomeState = {
-  loading: false,
-  error: undefined,
-  featuredPlaylists: [
-    // Mock data
-    {
-      id: "1",
-      name: "Trending Now",
-      description: "The hottest tracks right now",
-      images: [{ url: "https://via.placeholder.com/300" }],
-    },
-    {
-      id: "2",
-      name: "Chill Vibes",
-      description: "Relax with these calming songs",
-      images: [{ url: "https://via.placeholder.com/300" }],
-    },
-  ],
-  recentlyPlayed: [
-    // Mock data
-    {
-      id: "1",
-      name: "Song 1",
-      artists: [{ id: "artist1", name: "Artist 1" }],
-      album: {
-        id: "album1",
-        name: "Album 1",
-        images: [{ url: "https://via.placeholder.com/300" }],
-      },
-      images: [{ url: "https://via.placeholder.com/300" }],
-    },
-    {
-      id: "2",
-      name: "Song 2",
-      artists: [{ id: "artist2", name: "Artist 2" }],
-      album: {
-        id: "album2",
-        name: "Album 2",
-        images: [{ url: "https://via.placeholder.com/300" }],
-      },
-      images: [{ url: "https://via.placeholder.com/300" }],
-    },
-  ],
+  latestAlbums: [],
+  latestAlbumsLoading: false,
+  recentlyUpdatedAlbums: [],
+  recentlyUpdatedAlbumsLoading: false,
+
+  latestPlaylists: [],
+  latestPlaylistsLoading: false,
+  recentlyUpdatedPlaylists: [],
+  recentlyUpdatedPlaylistsLoading: false,
+
+  error: null,
 };
 
+// ===================== Async Thunks =====================
+
+// Fetch latest albums (sorted by created_at)
+export const fetchLatestAlbums = createAsyncThunk(
+  "home/fetchLatestAlbums",
+  async (limit: number = 10, { rejectWithValue }) => {
+    try {
+      const response = await AlbumServices.getAllAlbums(
+        1,
+        limit,
+        "created_at",
+        "desc"
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch latest albums"
+      );
+    }
+  }
+);
+
+// Fetch recently updated albums (sorted by updated_at)
+export const fetchRecentlyUpdatedAlbums = createAsyncThunk(
+  "home/fetchRecentlyUpdatedAlbums",
+  async (limit: number = 10, { rejectWithValue }) => {
+    try {
+      const response = await AlbumServices.getAllAlbums(
+        1,
+        limit,
+        "updated_at",
+        "desc"
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to fetch recently updated albums"
+      );
+    }
+  }
+);
+
+// Fetch latest playlists (sorted by created_at)
+export const fetchLatestPlaylists = createAsyncThunk(
+  "home/fetchLatestPlaylists",
+  async (limit: number = 10, { rejectWithValue }) => {
+    try {
+      const response = await playlistService.getPublicPlaylists(
+        1,
+        limit,
+        "created_at",
+        "desc"
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch latest playlists"
+      );
+    }
+  }
+);
+
+// Fetch recently updated playlists (sorted by updated_at)
+export const fetchRecentlyUpdatedPlaylists = createAsyncThunk(
+  "home/fetchRecentlyUpdatedPlaylists",
+  async (limit: number = 10, { rejectWithValue }) => {
+    try {
+      const response = await playlistService.getPublicPlaylists(
+        1,
+        limit,
+        "updated_at",
+        "desc"
+      );
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to fetch recently updated playlists"
+      );
+    }
+  }
+);
+
+// ===================== Slice =====================
 const homeSlice = createSlice({
   name: "home",
   initialState,
   reducers: {
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    clearError: (state) => {
+      state.error = null;
     },
-    setFeaturedPlaylists: (state, action: PayloadAction<Playlist[]>) => {
-      state.featuredPlaylists = action.payload;
-    },
-    setRecentlyPlayed: (state, action: PayloadAction<RecentlyPlayedItem[]>) => {
-      state.recentlyPlayed = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | undefined>) => {
-      state.error = action.payload;
-    },
-    // TODO: Thêm các action khác
-    fetchFeaturedPlaylists: (state) => {
-      // TODO: Implement thực tế với real API
-      state.loading = false;
-      // Mock data đã có trong initialState
-    },
-    fetchRecentlyPlayed: (state) => {
-      // TODO: Implement thực tế với real API
-      state.loading = false;
-      // Mock data đã có trong initialState
-    },
+  },
+  extraReducers: (builder) => {
+    // Latest Albums
+    builder
+      .addCase(fetchLatestAlbums.pending, (state) => {
+        state.latestAlbumsLoading = true;
+      })
+      .addCase(fetchLatestAlbums.fulfilled, (state, action) => {
+        state.latestAlbumsLoading = false;
+        state.latestAlbums = action.payload;
+      })
+      .addCase(fetchLatestAlbums.rejected, (state, action) => {
+        state.latestAlbumsLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Recently Updated Albums
+    builder
+      .addCase(fetchRecentlyUpdatedAlbums.pending, (state) => {
+        state.recentlyUpdatedAlbumsLoading = true;
+      })
+      .addCase(fetchRecentlyUpdatedAlbums.fulfilled, (state, action) => {
+        state.recentlyUpdatedAlbumsLoading = false;
+        state.recentlyUpdatedAlbums = action.payload;
+      })
+      .addCase(fetchRecentlyUpdatedAlbums.rejected, (state, action) => {
+        state.recentlyUpdatedAlbumsLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Latest Playlists
+    builder
+      .addCase(fetchLatestPlaylists.pending, (state) => {
+        state.latestPlaylistsLoading = true;
+      })
+      .addCase(fetchLatestPlaylists.fulfilled, (state, action) => {
+        state.latestPlaylistsLoading = false;
+        state.latestPlaylists = action.payload;
+      })
+      .addCase(fetchLatestPlaylists.rejected, (state, action) => {
+        state.latestPlaylistsLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Recently Updated Playlists
+    builder
+      .addCase(fetchRecentlyUpdatedPlaylists.pending, (state) => {
+        state.recentlyUpdatedPlaylistsLoading = true;
+      })
+      .addCase(fetchRecentlyUpdatedPlaylists.fulfilled, (state, action) => {
+        state.recentlyUpdatedPlaylistsLoading = false;
+        state.recentlyUpdatedPlaylists = action.payload;
+      })
+      .addCase(fetchRecentlyUpdatedPlaylists.rejected, (state, action) => {
+        state.recentlyUpdatedPlaylistsLoading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const homeActions = homeSlice.actions;
+// ===================== Selectors =====================
+export const selectLatestAlbums = (state: RootState) => state.home.latestAlbums;
+export const selectLatestAlbumsLoading = (state: RootState) =>
+  state.home.latestAlbumsLoading;
+export const selectRecentlyUpdatedAlbums = (state: RootState) =>
+  state.home.recentlyUpdatedAlbums;
+export const selectRecentlyUpdatedAlbumsLoading = (state: RootState) =>
+  state.home.recentlyUpdatedAlbumsLoading;
+
+export const selectLatestPlaylists = (state: RootState) =>
+  state.home.latestPlaylists;
+export const selectLatestPlaylistsLoading = (state: RootState) =>
+  state.home.latestPlaylistsLoading;
+export const selectRecentlyUpdatedPlaylists = (state: RootState) =>
+  state.home.recentlyUpdatedPlaylists;
+export const selectRecentlyUpdatedPlaylistsLoading = (state: RootState) =>
+  state.home.recentlyUpdatedPlaylistsLoading;
+
+export const homeActions = {
+  ...homeSlice.actions,
+  fetchLatestAlbums,
+  fetchRecentlyUpdatedAlbums,
+  fetchLatestPlaylists,
+  fetchRecentlyUpdatedPlaylists,
+};
+
 export default homeSlice.reducer;

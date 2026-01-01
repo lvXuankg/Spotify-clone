@@ -1,15 +1,16 @@
 "use client";
 
 import { FC, ReactNode, useMemo } from "react";
-import { Layout, Menu, Button, Dropdown, Avatar } from "antd";
+import { Layout, Menu, Dropdown, Avatar } from "antd";
 import {
   DashboardOutlined,
   UserOutlined,
   TeamOutlined,
   PlayCircleOutlined,
-  FileTextOutlined,
+  CustomerServiceOutlined,
   FlagOutlined,
   LogoutOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -38,32 +39,32 @@ const AdminLayout: FC<AdminLayoutProps> = ({ children }) => {
     {
       key: "/admin",
       icon: <DashboardOutlined />,
-      label: <Link href="/admin">Tổng quan</Link>,
+      label: <Link href="/admin">Dashboard</Link>,
     },
     {
       key: "/admin/artists",
       icon: <UserOutlined />,
-      label: <Link href="/admin/artists">Nghệ sĩ</Link>,
+      label: <Link href="/admin/artists">Artists</Link>,
     },
     {
       key: "/admin/users",
       icon: <TeamOutlined />,
-      label: <Link href="/admin/users">Người dùng</Link>,
+      label: <Link href="/admin/users">Users</Link>,
     },
     {
       key: "/admin/playlists",
-      icon: <PlayCircleOutlined />,
-      label: <Link href="/admin/playlists">Playlist</Link>,
+      icon: <UnorderedListOutlined />,
+      label: <Link href="/admin/playlists">Playlists</Link>,
     },
     {
       key: "/admin/songs",
-      icon: <FileTextOutlined />,
-      label: <Link href="/admin/songs">Bài hát</Link>,
+      icon: <CustomerServiceOutlined />,
+      label: <Link href="/admin/songs">Songs</Link>,
     },
     {
       key: "/admin/reports",
       icon: <FlagOutlined />,
-      label: <Link href="/admin/reports">Tố cáo</Link>,
+      label: <Link href="/admin/reports">Reports</Link>,
     },
   ];
 
@@ -71,13 +72,22 @@ const AdminLayout: FC<AdminLayoutProps> = ({ children }) => {
     {
       key: "profile",
       icon: <UserOutlined />,
-      label: "Hồ sơ",
+      label: "Profile",
       onClick: () => router.push("/user/profile"),
+    },
+    {
+      key: "home",
+      icon: <PlayCircleOutlined />,
+      label: "Back to Spotify",
+      onClick: () => router.push("/"),
+    },
+    {
+      type: "divider" as const,
     },
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      label: "Đăng xuất",
+      label: "Logout",
       onClick: handleLogout,
       danger: true,
     },
@@ -91,115 +101,56 @@ const AdminLayout: FC<AdminLayoutProps> = ({ children }) => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {/* Header */}
-      <Header
-        style={{
-          background:
-            "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-          padding: "0 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: "22px",
-              fontWeight: 700,
-            }}
-          >
-            🎵 Spotify Admin
-          </h2>
+      <Header className={styles.header}>
+        <div className={styles.logo}>
+          <svg height="28" width="28" viewBox="0 0 24 24" fill="#1db954">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+          </svg>
+          <h2>Spotify Admin</h2>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <Dropdown
-            menu={{ items: userMenuItems }}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <button
+        <Dropdown
+          menu={{ items: userMenuItems }}
+          trigger={["click"]}
+          placement="bottomRight"
+        >
+          <button className={styles.userBtn}>
+            <Avatar
+              size={32}
+              src={user?.avatar_url}
+              icon={<UserOutlined />}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                cursor: "pointer",
-                padding: "8px 12px",
-                borderRadius: "8px",
-                transition: "all 0.3s",
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                background: "rgba(255, 255, 255, 0.15)",
+                backgroundColor: "#1db954",
+                flexShrink: 0,
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.25)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.15)";
-              }}
-            >
-              <Avatar
-                size="large"
-                src={user?.avatar_url}
-                icon={<UserOutlined />}
-                style={{ border: "2px solid rgba(255, 255, 255, 0.3)" }}
-              />
-              <div style={{ textAlign: "left" }}>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                  }}
-                >
-                  {user?.name || user?.username || "Admin"}
-                </p>
-                <p
-                  style={{
-                    margin: "2px 0 0 0",
-                    color: "rgba(255, 255, 255, 0.7)",
-                    fontSize: "12px",
-                  }}
-                >
-                  Administrator
-                </p>
-              </div>
-            </button>
-          </Dropdown>
-        </div>
+            />
+            <div className={styles.userTextWrap}>
+              <span className={styles.userName}>
+                {user?.name || user?.username || "Admin"}
+              </span>
+              <span className={styles.userRole}>Administrator</span>
+            </div>
+          </button>
+        </Dropdown>
       </Header>
 
       <Layout>
         {/* Sidebar */}
-        <Sider
-          width={250}
-          style={{ background: "#001529" }}
-          className={styles.sidebar}
-        >
+        <Sider width={240} className={styles.sidebar}>
           <Menu
             mode="inline"
             selectedKeys={[selectedKey]}
-            defaultOpenKeys={["/admin"]}
             style={{
               height: "100%",
               borderRight: 0,
-              background: "#001529",
+              paddingTop: 16,
             }}
             items={menuItems}
-            theme="dark"
           />
         </Sider>
 
         {/* Main Content */}
-        <Content style={{ padding: "24px" }} className={styles.content}>
-          {children}
-        </Content>
+        <Content className={styles.content}>{children}</Content>
       </Layout>
     </Layout>
   );

@@ -1,9 +1,13 @@
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: linear-gradient(135deg, #1db954 0%, #191414 100%);
   padding: 0 24px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.15);
   display: flex;
   align-items: center;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .headerContent {
@@ -14,14 +18,22 @@
 }
 
 .logo {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .logo h2 {
   margin: 0;
   color: #fff;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.logoIcon {
+  font-size: 28px;
+  color: #1db954;
 }
 
 .userMenu {
@@ -29,39 +41,90 @@
   align-items: center;
 }
 
-.userInfo {
+.userBtn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.3s;
+  padding: 6px 12px;
+  border-radius: 24px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.userInfo:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.userBtn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.userTextWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
 }
 
 .userName {
   color: #fff;
   font-weight: 500;
-  font-size: 14px;
-  max-width: 150px;
+  font-size: 13px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
+}
+
+.userRole {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .sidebar {
-  background: #001529;
+  background: linear-gradient(180deg, #121212 0%, #0a0a0a 100%);
   height: calc(100vh - 64px);
   overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .content {
-  background: #f5f5f5;
+  background: linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
   min-height: calc(100vh - 64px);
+  padding: 24px;
+  color: #fff;
+}
+
+/* Custom Menu Styling */
+.sidebar :global(.ant-menu) {
+  background: transparent !important;
+  border-right: none !important;
+}
+
+.sidebar :global(.ant-menu-item) {
+  margin: 4px 8px !important;
+  border-radius: 8px !important;
+  color: #b3b3b3 !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar :global(.ant-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.sidebar :global(.ant-menu-item-selected) {
+  background: rgba(29, 185, 84, 0.15) !important;
+  color: #1db954 !important;
+}
+
+.sidebar :global(.ant-menu-item-selected::after) {
+  border-right-color: #1db954 !important;
+}
+
+.sidebar :global(.ant-menu-item a) {
+  color: inherit !important;
 }
 
 /* Scrollbar styling */
@@ -70,14 +133,138 @@
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: #001529;
+  background: transparent;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: #177ddc;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: #3c9ae8;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Page Header */
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.pageSubtitle {
+  color: #b3b3b3;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Stats Card */
+.statsCard {
+  background: linear-gradient(
+    135deg,
+    rgba(29, 185, 84, 0.1) 0%,
+    rgba(29, 185, 84, 0.05) 100%
+  );
+  border: 1px solid rgba(29, 185, 84, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(29, 185, 84, 0.15);
+}
+
+/* Table Styling */
+.tableCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.tableCard :global(.ant-card-body) {
+  padding: 0;
+}
+
+.tableCard :global(.ant-table) {
+  background: transparent !important;
+}
+
+.tableCard :global(.ant-table-thead > tr > th) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #b3b3b3 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-weight: 600;
+}
+
+.tableCard :global(.ant-table-tbody > tr > td) {
+  background: transparent !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.tableCard :global(.ant-table-tbody > tr:hover > td) {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.tableCard :global(.ant-pagination) {
+  margin: 16px !important;
+}
+
+.tableCard :global(.ant-pagination-item) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.tableCard :global(.ant-pagination-item a) {
+  color: #b3b3b3 !important;
+}
+
+.tableCard :global(.ant-pagination-item-active) {
+  background: #1db954 !important;
+  border-color: #1db954 !important;
+}
+
+.tableCard :global(.ant-pagination-item-active a) {
+  color: #fff !important;
+}
+
+/* Action Buttons */
+.actionBtn {
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.actionBtnDanger:hover {
+  background: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #b3b3b3;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: #404040;
+  margin-bottom: 16px;
 }

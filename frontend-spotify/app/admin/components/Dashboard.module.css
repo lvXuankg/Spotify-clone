@@ -1,0 +1,155 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  color: #b3b3b3;
+  margin: 0;
+  font-size: 14px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Stat Cards */
+.statCard {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.statCard :global(.ant-card-body) {
+  padding: 24px;
+}
+
+.statTitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statIcon {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+/* Content Cards */
+.contentCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.contentCard :global(.ant-card-head) {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 16px 24px;
+}
+
+.contentCard :global(.ant-card-head-title) {
+  color: #fff;
+  font-weight: 600;
+}
+
+.contentCard :global(.ant-card-body) {
+  padding: 0;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.cardHeader :global(.anticon) {
+  color: #1db954;
+}
+
+/* Table Styling */
+.table {
+  background: transparent !important;
+}
+
+.table :global(.ant-table) {
+  background: transparent !important;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #b3b3b3 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px !important;
+}
+
+.table :global(.ant-table-tbody > tr > td) {
+  background: transparent !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 12px 16px !important;
+}
+
+.table :global(.ant-table-tbody > tr:hover > td) {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.table :global(.ant-table-tbody > tr:last-child > td) {
+  border-bottom: none !important;
+}
+
+/* Progress Card */
+.progressCard {
+  padding: 8px;
+}
+
+.progressCard h4 {
+  color: #fff;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+}
+
+.progressCard :global(.ant-progress-text) {
+  color: #fff !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+}

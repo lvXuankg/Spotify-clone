@@ -1,10 +1,11 @@
 import api from "@/lib/axios";
 
-import type {
-  Song,
-  SongWithAlbum,
-  CreateSongDto,
-  UpdateSongDto,
+import {
+  type Song,
+  type SongWithAlbum,
+  type CreateSongDto,
+  type UpdateSongDto,
+  ResponseFindTitleSong,
 } from "@/interfaces/song";
 
 const SONG_URL = "/song";
@@ -29,10 +30,17 @@ const deleteSong = (songId: string) => {
   return api.delete<Song>(`${SONG_URL}/${songId}`);
 };
 
+const findSongs = (keyword: string, page: number, limit: number) => {
+  return api.get<ResponseFindTitleSong>(
+    `${SONG_URL}/search?keyword=${keyword}&page=${page}&limit=${limit}`
+  );
+};
+
 export const SongService = {
   createSong,
   updateSong,
   findAllSongs,
   findOneSong,
   deleteSong,
+  findSongs,
 };

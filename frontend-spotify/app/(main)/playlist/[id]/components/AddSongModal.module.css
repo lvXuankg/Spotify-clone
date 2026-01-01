@@ -1,0 +1,201 @@
+.modal :global(.ant-modal-content) {
+  background-color: #282828;
+  border-radius: 8px;
+}
+
+.modal :global(.ant-modal-header) {
+  background-color: transparent;
+  border-bottom: none;
+  padding: 24px 24px 16px;
+}
+
+.modal :global(.ant-modal-title) {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.modal :global(.ant-modal-body) {
+  padding: 0 24px 24px;
+}
+
+.modal :global(.ant-modal-close) {
+  color: #b3b3b3;
+}
+
+.modal :global(.ant-modal-close:hover) {
+  color: #ffffff;
+}
+
+/* Search */
+.searchWrapper {
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  height: 48px;
+  font-size: 14px;
+}
+
+.searchInput:focus,
+.searchInput:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.searchInput input {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.searchInput input::placeholder {
+  color: #b3b3b3;
+}
+
+.searchInput :global(.ant-input-prefix) {
+  color: #b3b3b3;
+  margin-right: 12px;
+}
+
+/* Results */
+.resultsWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.resultsWrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.resultsWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.resultsWrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+/* Song List */
+.songList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Song Item */
+.songItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.songItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.songAvatar {
+  flex-shrink: 0;
+}
+
+.songInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.songTitle {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.songMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #b3b3b3;
+}
+
+.artistName {
+  color: #b3b3b3;
+}
+
+.albumName {
+  color: #727272;
+}
+
+.albumName::before {
+  content: "•";
+  margin-right: 8px;
+}
+
+.duration {
+  color: #727272;
+}
+
+.duration::before {
+  content: "•";
+  margin-right: 8px;
+}
+
+/* Buttons */
+.addButton {
+  background-color: #1db954;
+  border-color: #1db954;
+}
+
+.addButton:hover {
+  background-color: #1ed760;
+  border-color: #1ed760;
+}
+
+.addedButton {
+  background-color: transparent;
+  border-color: #1db954;
+  color: #1db954;
+}
+
+/* Empty & Placeholder */
+.empty {
+  padding: 48px;
+}
+
+.empty :global(.ant-empty-description) {
+  color: #b3b3b3;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #b3b3b3;
+  text-align: center;
+}
+
+.placeholderIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #727272;
+}

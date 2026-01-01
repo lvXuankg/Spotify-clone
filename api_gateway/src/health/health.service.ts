@@ -14,6 +14,7 @@ export class HealthService {
     @Inject('ARTIST_SERVICE') private artistServiceClient: ClientProxy,
     @Inject('ALBUM_SERVICE') private albumServiceClient: ClientProxy,
     @Inject('SONG_SERVICE') private songServiceClient: ClientProxy,
+    @Inject('PLAYLIST_SERVICE') private playlistServiceClient: ClientProxy,
     private readonly logger: LoggerService,
   ) {}
 
@@ -111,6 +112,13 @@ export class HealthService {
       this.songServiceClient,
     );
     services.push(songServiceHealth);
+
+    // Check Playlist Service
+    const playlistServiceHealth = await this.checkServiceHealth(
+      'Playlist Service',
+      this.playlistServiceClient,
+    );
+    services.push(playlistServiceHealth);
 
     // Determine overall status
     const allHealthy = services.every((s) => s.status === 'up');

@@ -10,6 +10,7 @@ import { memo, useMemo } from "react";
 import { isActiveOnOtherDevice } from "@/store/slices/spotify";
 import { getLibraryCollapsed, uiActions } from "@/store/slices/ui";
 import { LanguageButton } from "../Language";
+import { useTranslation } from "react-i18next";
 
 const COLLAPSED_STYLE = {
   overflowY: "scroll",

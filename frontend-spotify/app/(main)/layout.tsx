@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout";
 export default function MainLayout({
   children,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }) {
   return <AppLayout>{children}</AppLayout>;
 }

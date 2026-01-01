@@ -111,4 +111,66 @@ export class SongService {
       },
     });
   }
+
+  async searchByTitle(keyword: string, page = 1, limit = 20) {
+    if (!keyword || keyword.trim() === '') {
+      throw new BadRequestException('Từ khóa tìm kiếm không hợp lệ');
+    }
+
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.min(Math.max(1, limit), 50);
+    const skip = (safePage - 1) * safeLimit;
+
+    const [songs, total] = await this.prisma.$transaction([
+      this.prisma.songs.findMany({
+        where: {
+          title: {
+            contains: keyword,
+            mode: 'insensitive',
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+        skip,
+        take: safeLimit,
+        include: {
+          albums: {
+            select: {
+              id: true,
+              title: true,
+              artists: {
+                select: {
+                  id: true,
+                  display_name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+
+      this.prisma.songs.count({
+        where: {
+          title: {
+            contains: keyword,
+            mode: 'insensitive',
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / safeLimit);
+
+    return {
+      data: songs,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasMore: safePage < totalPages,
+      },
+    };
+  }
 }

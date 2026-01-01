@@ -1,3 +1,5 @@
+import { PaginationMeta } from "./pagination";
+
 export interface Song {
   id: string;
   album_id: string;
@@ -43,4 +45,18 @@ export interface UpdateSongDto {
   discNumber?: number;
   isExplicit?: boolean;
   bitrate?: number;
+}
+
+interface Artist {
+  id: string;
+  display_name: string;
+}
+
+interface SongFindTitleResponse extends Song {
+  albums: { id: string; title: string; artists: Artist };
+}
+
+export interface ResponseFindTitleSong {
+  data: SongFindTitleResponse[];
+  pagination: PaginationMeta;
 }

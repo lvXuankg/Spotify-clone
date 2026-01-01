@@ -72,4 +72,12 @@ export class SongService {
       id: songId,
     });
   }
+
+  async searchSongByTitle(keyword: string, page: number, limit: number) {
+    return sendMicroserviceRequest(this.client, 'song.search-by-title', {
+      keyword,
+      page,
+      limit,
+    });
+  }
 }

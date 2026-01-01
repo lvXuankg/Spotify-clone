@@ -72,6 +72,17 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'PLAYLIST_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().playlistService.urls,
+          queue: getConfig().playlistService.queue,
+          queueOptions: {
+            durable: getConfig().playlistService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

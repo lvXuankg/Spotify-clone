@@ -11,6 +11,7 @@ import { FileModule } from './file/file.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { SongModule } from './song/song.module';
+import { PlaylistModule } from './playlist/playlist.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SongModule } from './song/song.module';
     ArtistModule,
     AlbumModule,
     SongModule,
+    PlaylistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

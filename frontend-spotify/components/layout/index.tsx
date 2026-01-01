@@ -1,45 +1,50 @@
 "use client";
 
-import { memo, ReactElement, useEffect } from "react";
-import { Col, Row } from "antd";
+import { memo, type ReactNode, useEffect } from "react";
 import { Navbar } from "./navbar";
-import { Library } from "./sidebar";
 import PlayingBar from "./player/PlayingBar";
+import { PlaylistSidebar } from "./sidebar/PlaylistSidebar";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { fetchProfile } from "@/store/slices/profile";
+import { getLibraryCollapsed } from "@/store/slices/ui";
+import styles from "./AppLayout.module.css";
 
-export const AppLayout = memo(({ children }: { children: ReactElement }) => {
+export const AppLayout = memo(({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { profile, loading } = useAppSelector((state) => state.profile);
+  const libraryCollapsed = useAppSelector(getLibraryCollapsed);
 
   useEffect(() => {
     if (isAuthenticated && !profile && !loading) {
       dispatch(fetchProfile());
     }
   }, [isAuthenticated, profile, loading, dispatch]);
-  return (
-    <div className="app-layout">
-      <Row
-        gutter={[8, 8]}
-        style={{
-          width: "100%",
-          minHeight: "calc(100vh - 105px)",
-          paddingBottom: "105px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* Header */}
-        <Col span={24}>
-          <Navbar />
-        </Col>
 
-        {/* Main Content */}
-        <Col span={24}>
-          <div className="content-wrapper">{children}</div>
-        </Col>
-      </Row>
+  return (
+    <div className={styles.appLayout}>
+      {/* Main Container */}
+      <div className={styles.mainContainer}>
+        {/* Sidebar */}
+        <aside
+          className={`${styles.sidebar} ${
+            libraryCollapsed ? styles.collapsed : ""
+          }`}
+        >
+          <PlaylistSidebar />
+        </aside>
+
+        {/* Content Area */}
+        <div className={styles.contentArea}>
+          {/* Navbar */}
+          <header className={styles.header}>
+            <Navbar />
+          </header>
+
+          {/* Main Content */}
+          <main className={styles.mainContent}>{children}</main>
+        </div>
+      </div>
 
       {/* Player Bar */}
       <PlayingBar />

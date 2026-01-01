@@ -8,7 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
-import type * as runtime from "@prisma/client/runtime/client"
+import type * as runtime from "@prisma/client/runtime/library"
 import type * as $Enums from "../enums"
 import type * as Prisma from "../internal/prismaNamespace"
 
@@ -37,6 +37,8 @@ export type UsersMinAggregateOutputType = {
   description: string | null
   created_at: Date | null
   updated_at: Date | null
+  name: string | null
+  country: string | null
 }
 
 export type UsersMaxAggregateOutputType = {
@@ -52,6 +54,8 @@ export type UsersMaxAggregateOutputType = {
   description: string | null
   created_at: Date | null
   updated_at: Date | null
+  name: string | null
+  country: string | null
 }
 
 export type UsersCountAggregateOutputType = {
@@ -67,6 +71,8 @@ export type UsersCountAggregateOutputType = {
   description: number
   created_at: number
   updated_at: number
+  name: number
+  country: number
   _all: number
 }
 
@@ -84,6 +90,8 @@ export type UsersMinAggregateInputType = {
   description?: true
   created_at?: true
   updated_at?: true
+  name?: true
+  country?: true
 }
 
 export type UsersMaxAggregateInputType = {
@@ -99,6 +107,8 @@ export type UsersMaxAggregateInputType = {
   description?: true
   created_at?: true
   updated_at?: true
+  name?: true
+  country?: true
 }
 
 export type UsersCountAggregateInputType = {
@@ -114,6 +124,8 @@ export type UsersCountAggregateInputType = {
   description?: true
   created_at?: true
   updated_at?: true
+  name?: true
+  country?: true
   _all?: true
 }
 
@@ -202,6 +214,8 @@ export type UsersGroupByOutputType = {
   description: string | null
   created_at: Date | null
   updated_at: Date | null
+  name: string | null
+  country: string
   _count: UsersCountAggregateOutputType | null
   _min: UsersMinAggregateOutputType | null
   _max: UsersMaxAggregateOutputType | null
@@ -238,6 +252,8 @@ export type usersWhereInput = {
   description?: Prisma.StringNullableFilter<"users"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"users"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableFilter<"users"> | Date | string | null
+  name?: Prisma.StringNullableFilter<"users"> | string | null
+  country?: Prisma.StringFilter<"users"> | string
   password_reset_tokens?: Prisma.Password_reset_tokensListRelationFilter
   refresh_tokens?: Prisma.Refresh_tokensListRelationFilter
   user_liked_artists?: Prisma.User_liked_artistsListRelationFilter
@@ -264,6 +280,8 @@ export type usersOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   updated_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrder
   password_reset_tokens?: Prisma.password_reset_tokensOrderByRelationAggregateInput
   refresh_tokens?: Prisma.refresh_tokensOrderByRelationAggregateInput
   user_liked_artists?: Prisma.user_liked_artistsOrderByRelationAggregateInput
@@ -293,6 +311,8 @@ export type usersWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"users"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"users"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableFilter<"users"> | Date | string | null
+  name?: Prisma.StringNullableFilter<"users"> | string | null
+  country?: Prisma.StringFilter<"users"> | string
   password_reset_tokens?: Prisma.Password_reset_tokensListRelationFilter
   refresh_tokens?: Prisma.Refresh_tokensListRelationFilter
   user_liked_artists?: Prisma.User_liked_artistsListRelationFilter
@@ -319,6 +339,8 @@ export type usersOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   updated_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrder
   _count?: Prisma.usersCountOrderByAggregateInput
   _max?: Prisma.usersMaxOrderByAggregateInput
   _min?: Prisma.usersMinOrderByAggregateInput
@@ -340,6 +362,8 @@ export type usersScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"users"> | string | null
   created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"users"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableWithAggregatesFilter<"users"> | Date | string | null
+  name?: Prisma.StringNullableWithAggregatesFilter<"users"> | string | null
+  country?: Prisma.StringWithAggregatesFilter<"users"> | string
 }
 
 export type usersCreateInput = {
@@ -355,6 +379,8 @@ export type usersCreateInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -381,6 +407,8 @@ export type usersUncheckedCreateInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -407,6 +435,8 @@ export type usersUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -433,6 +463,8 @@ export type usersUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -459,6 +491,8 @@ export type usersCreateManyInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
 }
 
 export type usersUpdateManyMutationInput = {
@@ -474,6 +508,8 @@ export type usersUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type usersUncheckedUpdateManyInput = {
@@ -489,6 +525,8 @@ export type usersUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type UsersScalarRelationFilter = {
@@ -509,6 +547,8 @@ export type usersCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  country?: Prisma.SortOrder
 }
 
 export type usersMaxOrderByAggregateInput = {
@@ -524,6 +564,8 @@ export type usersMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  country?: Prisma.SortOrder
 }
 
 export type usersMinOrderByAggregateInput = {
@@ -539,6 +581,8 @@ export type usersMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  country?: Prisma.SortOrder
 }
 
 export type UsersNullableScalarRelationFilter = {
@@ -719,6 +763,8 @@ export type usersCreateWithoutPassword_reset_tokensInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersCreateNestedManyWithoutUsersInput
@@ -744,6 +790,8 @@ export type usersUncheckedCreateWithoutPassword_reset_tokensInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersUncheckedCreateNestedManyWithoutUsersInput
@@ -785,6 +833,8 @@ export type usersUpdateWithoutPassword_reset_tokensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUpdateManyWithoutUsersNestedInput
@@ -810,6 +860,8 @@ export type usersUncheckedUpdateWithoutPassword_reset_tokensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUncheckedUpdateManyWithoutUsersNestedInput
@@ -835,6 +887,8 @@ export type usersCreateWithoutRefresh_tokensInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersCreateNestedManyWithoutUsersInput
@@ -860,6 +914,8 @@ export type usersUncheckedCreateWithoutRefresh_tokensInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersUncheckedCreateNestedManyWithoutUsersInput
@@ -901,6 +957,8 @@ export type usersUpdateWithoutRefresh_tokensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUpdateManyWithoutUsersNestedInput
@@ -926,6 +984,8 @@ export type usersUncheckedUpdateWithoutRefresh_tokensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUncheckedUpdateManyWithoutUsersNestedInput
@@ -951,6 +1011,8 @@ export type usersCreateWithoutUser_liked_artistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersCreateNestedManyWithoutUsersInput
@@ -976,6 +1038,8 @@ export type usersUncheckedCreateWithoutUser_liked_artistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   artist_followers?: Prisma.artist_followersUncheckedCreateNestedManyWithoutUsersInput
@@ -1017,6 +1081,8 @@ export type usersUpdateWithoutUser_liked_artistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUpdateManyWithoutUsersNestedInput
@@ -1042,6 +1108,8 @@ export type usersUncheckedUpdateWithoutUser_liked_artistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   artist_followers?: Prisma.artist_followersUncheckedUpdateManyWithoutUsersNestedInput
@@ -1067,6 +1135,8 @@ export type usersCreateWithoutArtist_followersInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1092,6 +1162,8 @@ export type usersUncheckedCreateWithoutArtist_followersInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1133,6 +1205,8 @@ export type usersUpdateWithoutArtist_followersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1158,6 +1232,8 @@ export type usersUncheckedUpdateWithoutArtist_followersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1183,6 +1259,8 @@ export type usersCreateWithoutArtistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1208,6 +1286,8 @@ export type usersUncheckedCreateWithoutArtistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1249,6 +1329,8 @@ export type usersUpdateWithoutArtistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1274,6 +1356,8 @@ export type usersUncheckedUpdateWithoutArtistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1299,6 +1383,8 @@ export type usersCreateWithoutPlaylist_songsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1324,6 +1410,8 @@ export type usersUncheckedCreateWithoutPlaylist_songsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1365,6 +1453,8 @@ export type usersUpdateWithoutPlaylist_songsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1390,6 +1480,8 @@ export type usersUncheckedUpdateWithoutPlaylist_songsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1415,6 +1507,8 @@ export type usersCreateWithoutPlaylistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1440,6 +1534,8 @@ export type usersUncheckedCreateWithoutPlaylistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1481,6 +1577,8 @@ export type usersUpdateWithoutPlaylistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1506,6 +1604,8 @@ export type usersUncheckedUpdateWithoutPlaylistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1531,6 +1631,8 @@ export type usersCreateWithoutSong_likesInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1556,6 +1658,8 @@ export type usersUncheckedCreateWithoutSong_likesInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1597,6 +1701,8 @@ export type usersUpdateWithoutSong_likesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1622,6 +1728,8 @@ export type usersUncheckedUpdateWithoutSong_likesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1647,6 +1755,8 @@ export type usersCreateWithoutUser_saved_albumsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1672,6 +1782,8 @@ export type usersUncheckedCreateWithoutUser_saved_albumsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1713,6 +1825,8 @@ export type usersUpdateWithoutUser_saved_albumsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1738,6 +1852,8 @@ export type usersUncheckedUpdateWithoutUser_saved_albumsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1763,6 +1879,8 @@ export type usersCreateWithoutUser_saved_artistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1788,6 +1906,8 @@ export type usersUncheckedCreateWithoutUser_saved_artistsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1829,6 +1949,8 @@ export type usersUpdateWithoutUser_saved_artistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1854,6 +1976,8 @@ export type usersUncheckedUpdateWithoutUser_saved_artistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -1879,6 +2003,8 @@ export type usersCreateWithoutUser_saved_songsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsCreateNestedManyWithoutUsersInput
@@ -1904,6 +2030,8 @@ export type usersUncheckedCreateWithoutUser_saved_songsInput = {
   description?: string | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  name?: string | null
+  country?: string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedCreateNestedManyWithoutUsersInput
@@ -1945,6 +2073,8 @@ export type usersUpdateWithoutUser_saved_songsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUpdateManyWithoutUsersNestedInput
@@ -1970,6 +2100,8 @@ export type usersUncheckedUpdateWithoutUser_saved_songsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.StringFieldUpdateOperationsInput | string
   password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   user_liked_artists?: Prisma.user_liked_artistsUncheckedUpdateManyWithoutUsersNestedInput
@@ -2116,6 +2248,8 @@ export type usersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   description?: boolean
   created_at?: boolean
   updated_at?: boolean
+  name?: boolean
+  country?: boolean
   password_reset_tokens?: boolean | Prisma.users$password_reset_tokensArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.users$refresh_tokensArgs<ExtArgs>
   user_liked_artists?: boolean | Prisma.users$user_liked_artistsArgs<ExtArgs>
@@ -2143,6 +2277,8 @@ export type usersSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   description?: boolean
   created_at?: boolean
   updated_at?: boolean
+  name?: boolean
+  country?: boolean
 }, ExtArgs["result"]["users"]>
 
 export type usersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2158,6 +2294,8 @@ export type usersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   description?: boolean
   created_at?: boolean
   updated_at?: boolean
+  name?: boolean
+  country?: boolean
 }, ExtArgs["result"]["users"]>
 
 export type usersSelectScalar = {
@@ -2173,9 +2311,11 @@ export type usersSelectScalar = {
   description?: boolean
   created_at?: boolean
   updated_at?: boolean
+  name?: boolean
+  country?: boolean
 }
 
-export type usersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "bio" | "avatar_url" | "facebook_url" | "zalo_phone" | "description" | "created_at" | "updated_at", ExtArgs["result"]["users"]>
+export type usersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "bio" | "avatar_url" | "facebook_url" | "zalo_phone" | "description" | "created_at" | "updated_at" | "name" | "country", ExtArgs["result"]["users"]>
 export type usersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   password_reset_tokens?: boolean | Prisma.users$password_reset_tokensArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.users$refresh_tokensArgs<ExtArgs>
@@ -2221,6 +2361,8 @@ export type $usersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     description: string | null
     created_at: Date | null
     updated_at: Date | null
+    name: string | null
+    country: string
   }, ExtArgs["result"]["users"]>
   composites: {}
 }
@@ -2667,6 +2809,8 @@ export interface usersFieldRefs {
   readonly description: Prisma.FieldRef<"users", 'String'>
   readonly created_at: Prisma.FieldRef<"users", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"users", 'DateTime'>
+  readonly name: Prisma.FieldRef<"users", 'String'>
+  readonly country: Prisma.FieldRef<"users", 'String'>
 }
     
 

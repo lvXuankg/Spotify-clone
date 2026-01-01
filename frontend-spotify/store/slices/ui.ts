@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
+import type { LibraryViewMode } from "./yourLibrary";
 
 interface UIState {
   libraryCollapsed: boolean;
@@ -7,7 +8,7 @@ interface UIState {
   detailsCollapsed: boolean;
   queueCollapsed: boolean;
   devicesCollapsed: boolean;
-  // TODO: Thêm các field UI khác
+  libraryViewMode: LibraryViewMode;
 }
 
 const initialState: UIState = {
@@ -16,6 +17,7 @@ const initialState: UIState = {
   detailsCollapsed: false,
   queueCollapsed: false,
   devicesCollapsed: false,
+  libraryViewMode: "list",
 };
 
 const uiSlice = createSlice({
@@ -27,6 +29,12 @@ const uiSlice = createSlice({
     },
     setLibraryCollapsed: (state, action: PayloadAction<boolean>) => {
       state.libraryCollapsed = action.payload;
+    },
+    collapseLibrary: (state) => {
+      state.libraryCollapsed = true;
+    },
+    expandLibrary: (state) => {
+      state.libraryCollapsed = false;
     },
     setRightLayoutOpen: (state, action: PayloadAction<boolean>) => {
       state.rightLayoutOpen = action.payload;
@@ -43,13 +51,17 @@ const uiSlice = createSlice({
     toggleLibrary: (state) => {
       state.libraryCollapsed = !state.libraryCollapsed;
     },
-    // TODO: Thêm các action UI khác
+    setLibraryViewMode: (state, action: PayloadAction<LibraryViewMode>) => {
+      state.libraryViewMode = action.payload;
+    },
   },
 });
 
 export const getLibraryCollapsed = (state: RootState) =>
   state.ui.libraryCollapsed;
 export const isRightLayoutOpen = (state: RootState) => state.ui.rightLayoutOpen;
+export const getLibraryViewMode = (state: RootState) =>
+  state.ui.libraryViewMode;
 
 export const uiActions = uiSlice.actions;
 export default uiSlice.reducer;

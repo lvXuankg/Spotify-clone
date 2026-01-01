@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SongService } from './song.service';
@@ -33,6 +34,15 @@ export class SongController {
   @Get('album/:albumId')
   async findAllSongs(@Param('albumId') albumId: string) {
     return this.songService.findAllSongs(albumId);
+  }
+
+  @Get('search')
+  async findSongs(
+    @Query('keyword') keyword: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    return this.songService.searchSongByTitle(keyword, page, limit);
   }
 
   @Get(':songId')

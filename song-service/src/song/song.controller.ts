@@ -39,4 +39,15 @@ export class SongController {
   async incrementPlayCount(@Payload() payload: { id: string }) {
     return this.songService.incrementPlayCount(payload.id);
   }
+
+  @MessagePattern('song.search-by-title')
+  async searchByTitle(
+    @Payload() payload: { keyword: string; page: number; limit: number },
+  ) {
+    return this.songService.searchByTitle(
+      payload.keyword,
+      payload.page,
+      payload.limit,
+    );
+  }
 }

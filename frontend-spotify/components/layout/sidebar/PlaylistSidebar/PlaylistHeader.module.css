@@ -1,0 +1,58 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 8px;
+}
+
+.headerCollapsed {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b3b3b3;
+  transition: color 0.2s ease;
+}
+
+.titleSection:hover .title {
+  color: #ffffff;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: #b3b3b3;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.iconButton:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.iconButton svg {
+  width: 24px;
+  height: 24px;
+}

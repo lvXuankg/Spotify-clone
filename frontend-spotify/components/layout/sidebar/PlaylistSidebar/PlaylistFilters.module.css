@@ -1,0 +1,86 @@
+.container {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterTag {
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: none;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filterTag:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.filterTag.active {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  width: 100%;
+}
+
+.searchInput:focus,
+.searchInput:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.searchInput input {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.searchInput input::placeholder {
+  color: #b3b3b3;
+}
+
+.searchInput .ant-input-prefix {
+  color: #b3b3b3;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.searchButton:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}

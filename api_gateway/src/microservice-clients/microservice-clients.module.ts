@@ -83,6 +83,17 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'STREAM_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().streamService.urls,
+          queue: getConfig().streamService.queue,
+          queueOptions: {
+            durable: getConfig().streamService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

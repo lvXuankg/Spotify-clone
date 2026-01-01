@@ -1,153 +1,153 @@
 "use client";
 
 import { memo } from "react";
-import { Row, Col } from "antd";
-import { useAppSelector } from "@/store/store";
-import { playerService } from "@/services/player";
+import { Button, Space, Tooltip } from "antd";
+import { useAppSelector, useAppDispatch } from "@/store/store";
+import { playerActions } from "@/store/slices/player";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
+import {
+  PlayCircleFilled,
+  PauseCircleFilled,
+  StepBackwardFilled,
+  StepForwardFilled,
+  RetweetOutlined,
+  SwapOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
 
-// Icons (simplified - replace with actual icons)
-const Play = () => <span>▶️</span>;
-const Pause = () => <span>⏸️</span>;
-const SkipBack = () => <span>⏮️</span>;
-const SkipNext = () => <span>⏭️</span>;
-const ShuffleIcon = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.5 }}>🔀</span>
-);
-const Replay = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.5 }}>🔁</span>
-);
-const ReplayOne = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.5 }}>🔂</span>
-);
+import styles from "./ControlButtons.module.css";
 
 const ShuffleButton = memo(() => {
+  const dispatch = useAppDispatch();
   const shuffle = useAppSelector((state) => state.player.shuffle);
+
   return (
-    <button
-      onClick={() => playerService.toggleShuffle(!shuffle).then()}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "#ffffff",
-      }}
-    >
-      <ShuffleIcon active={!!shuffle} />
-    </button>
+    <Tooltip title={shuffle ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}>
+      <button
+        onClick={() => dispatch(playerActions.setShuffle(!shuffle))}
+        className={`${styles.controlBtn} ${shuffle ? styles.active : ""}`}
+      >
+        <SwapOutlined className={styles.icon} />
+      </button>
+    </Tooltip>
   );
 });
+
+ShuffleButton.displayName = "ShuffleButton";
 
 const SkipBackButton = memo(() => {
-  const disabled = useAppSelector(
-    (state) => state.player.disallows?.skipping_prev
-  );
+  const { previous, currentTrack } = useAudioPlayerContext();
+  const disabled = !currentTrack;
+
   return (
-    <button
-      className={disabled ? "disabled" : ""}
-      onClick={() => !disabled && playerService.previousTrack().then()}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        color: disabled ? "#666" : "#ffffff",
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      <SkipBack />
-    </button>
+    <Tooltip title="Bài trước">
+      <button
+        onClick={() => !disabled && previous()}
+        className={`${styles.controlBtn} ${disabled ? styles.disabled : ""}`}
+        disabled={disabled}
+      >
+        <StepBackwardFilled className={styles.icon} />
+      </button>
+    </Tooltip>
   );
 });
+
+SkipBackButton.displayName = "SkipBackButton";
 
 const PlayButton = memo(() => {
-  const isPlaying = useAppSelector((state) => state.player.isPlaying);
-  const disabled = useAppSelector((state) => state.player.disallows?.pausing);
+  const { isPlaying, togglePlay, currentTrack, isLoading } =
+    useAudioPlayerContext();
+  const disabled = !currentTrack || isLoading;
 
   return (
-    <button
-      className={`player-pause-button ${disabled ? "disabled" : ""}`}
-      onClick={() => {
-        if (!disabled) {
-          return isPlaying
-            ? playerService.pausePlayback().then()
-            : playerService.startPlayback().then();
-        }
-      }}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        color: "#ffffff",
-        fontSize: "24px",
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      {!isPlaying ? <Play /> : <Pause />}
-    </button>
+    <Tooltip title={isPlaying ? "Tạm dừng" : "Phát"}>
+      <button
+        onClick={() => !disabled && togglePlay()}
+        className={`${styles.playBtn} ${disabled ? styles.disabled : ""}`}
+        disabled={disabled}
+      >
+        {isLoading ? (
+          <LoadingOutlined className={styles.playIcon} spin />
+        ) : isPlaying ? (
+          <PauseCircleFilled className={styles.playIcon} />
+        ) : (
+          <PlayCircleFilled className={styles.playIcon} />
+        )}
+      </button>
+    </Tooltip>
   );
 });
+
+PlayButton.displayName = "PlayButton";
 
 const SkipNextButton = memo(() => {
-  const disabled = useAppSelector(
-    (state) => state.player.disallows?.skipping_next
-  );
+  const { next, queue, queueIndex } = useAudioPlayerContext();
+  const disabled = queue.length === 0 || queueIndex >= queue.length - 1;
+
   return (
-    <button
-      className={disabled ? "disabled" : ""}
-      onClick={() => !disabled && playerService.nextTrack().then()}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        color: disabled ? "#666" : "#ffffff",
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      <SkipNext />
-    </button>
+    <Tooltip title="Bài tiếp">
+      <button
+        onClick={() => !disabled && next()}
+        className={`${styles.controlBtn} ${disabled ? styles.disabled : ""}`}
+        disabled={disabled}
+      >
+        <StepForwardFilled className={styles.icon} />
+      </button>
+    </Tooltip>
   );
 });
+
+SkipNextButton.displayName = "SkipNextButton";
 
 const ReplayButton = memo(() => {
-  const repeatMode = useAppSelector((state) => state.player.repeatMode); // 0=off, 1=context, 2=track
-  const looping = repeatMode === 1 || repeatMode === 2;
+  const dispatch = useAppDispatch();
+  const repeatMode = useAppSelector((state) => state.player.repeatMode);
+
+  const getTitle = () => {
+    switch (repeatMode) {
+      case 0:
+        return "Bật lặp lại";
+      case 1:
+        return "Lặp lại một bài";
+      case 2:
+        return "Tắt lặp lại";
+      default:
+        return "Lặp lại";
+    }
+  };
 
   return (
-    <button
-      className={repeatMode === 2 ? "active-icon-button" : ""}
-      onClick={() => {
-        const nextMode =
-          repeatMode === 2 ? "off" : repeatMode === 1 ? "track" : "context";
-        playerService.setRepeatMode(nextMode).then();
-      }}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: repeatMode === 2 ? "#1db954" : "#ffffff",
-      }}
-    >
-      {repeatMode === 2 ? <ReplayOne active /> : <Replay active={looping} />}
-    </button>
+    <Tooltip title={getTitle()}>
+      <button
+        onClick={() => {
+          const nextMode: 0 | 1 | 2 =
+            repeatMode === 2 ? 0 : repeatMode === 1 ? 2 : 1;
+          dispatch(playerActions.setRepeatMode(nextMode));
+        }}
+        className={`${styles.controlBtn} ${
+          repeatMode > 0 ? styles.active : ""
+        }`}
+      >
+        <RetweetOutlined className={styles.icon} />
+        {repeatMode === 2 && <span className={styles.repeatOne}>1</span>}
+      </button>
+    </Tooltip>
   );
 });
 
-const CONTROLS = [
-  ShuffleButton,
-  SkipBackButton,
-  PlayButton,
-  SkipNextButton,
-  ReplayButton,
-];
+ReplayButton.displayName = "ReplayButton";
 
 const ControlButtons = memo(() => {
   return (
-    <Row gutter={24} align="middle" style={{ justifyContent: "center" }}>
-      {CONTROLS.map((Component, index) => (
-        <Col key={index}>
-          <Component />
-        </Col>
-      ))}
-    </Row>
+    <div className={styles.container}>
+      <Space size="middle" align="center">
+        <ShuffleButton />
+        <SkipBackButton />
+        <PlayButton />
+        <SkipNextButton />
+        <ReplayButton />
+      </Space>
+    </div>
   );
 });
 

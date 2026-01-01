@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["analytics_service"]
+}
+
+model song_play_counts {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  song_id          String    @db.Uuid
+  snapshot_date    DateTime  @db.Date
+  total_play_count BigInt    @default(0)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([song_id, snapshot_date])
+  @@schema("analytics_service")
+}
+
+model song_play_events {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.Uuid
+  song_id        String   @db.Uuid
+  played_seconds Int
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at(sort: Desc)], map: "idx_play_events_created_at")
+  @@index([song_id, created_at(sort: Desc)], map: "idx_play_events_song_id")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_play_events_user_id")
+  @@schema("analytics_service")
+}
+
+model song_play_history {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id   String   @db.Uuid
+  song_id   String   @db.Uuid
+  played_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([song_id, played_at(sort: Desc)], map: "idx_play_history_song_id")
+  @@index([user_id, played_at(sort: Desc)], map: "idx_play_history_user_id")
+  @@schema("analytics_service")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_artist_actions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  artist_id   String   @db.Uuid
+  action_type String?  @db.VarChar(20)
+  metadata    Json?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([artist_id, created_at(sort: Desc)], map: "idx_artist_actions_artist_id")
+  @@index([action_type], map: "idx_artist_actions_type")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_artist_actions_user_id")
+  @@schema("analytics_service")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_playlist_actions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  playlist_id String   @db.Uuid
+  action_type String?  @db.VarChar(20)
+  metadata    Json?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([playlist_id, created_at(sort: Desc)], map: "idx_playlist_actions_playlist_id")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_playlist_actions_user_id")
+  @@schema("analytics_service")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_song_actions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  song_id     String   @db.Uuid
+  action_type String?  @db.VarChar(20)
+  metadata    Json?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([song_id, created_at(sort: Desc)], map: "idx_song_actions_song_id")
+  @@index([action_type], map: "idx_song_actions_type")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_song_actions_user_id")
+  @@schema("analytics_service")
+}

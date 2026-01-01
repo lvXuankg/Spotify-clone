@@ -1,72 +1,79 @@
 "use client";
 
-import { memo, useState } from "react";
-import { Space, Tooltip } from "antd";
+import { memo, useState, useEffect } from "react";
+import { Tooltip } from "antd";
 import { Slider } from "@/components/Slider";
-import { playerService } from "@/services/player";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
+import { SoundOutlined, SoundFilled } from "@ant-design/icons";
 
-// Icons
-const VolumeMuteIcon = () => <span>🔇</span>;
-const VolumeOneIcon = () => <span>🔉</span>;
-const VolumeTwoIcon = () => <span>🔊</span>;
-const VolumeIcon = () => <span>🔊</span>;
+import styles from "./Volume.module.css";
 
-const getIcon = (volume: number) => {
-  if (volume === 0) {
-    return <VolumeMuteIcon />;
+const VolumeIcon = ({ volume, muted }: { volume: number; muted: boolean }) => {
+  // Using different visual representations
+  if (muted || volume === 0) {
+    return (
+      <div className={styles.iconWrapper}>
+        <SoundOutlined className={styles.icon} />
+        <div className={styles.muteLine} />
+      </div>
+    );
   }
-  if (volume < 0.4) {
-    return <VolumeOneIcon />;
-  }
-  if (volume < 0.7) {
-    return <VolumeTwoIcon />;
-  }
-  return <VolumeIcon />;
+  return <SoundFilled className={styles.icon} />;
 };
 
 export const VolumeControls = memo(() => {
-  const [volume, setVolume] = useState<number>(1);
+  const {
+    volume: playerVolume,
+    isMuted,
+    setVolume: setPlayerVolume,
+    toggleMute,
+  } = useAudioPlayerContext();
 
-  const muted = volume === 0;
+  const [volume, setVolume] = useState<number>(playerVolume);
+  const [prevVolume, setPrevVolume] = useState<number>(playerVolume);
+
+  // Sync with player
+  useEffect(() => {
+    if (!isMuted) {
+      setVolume(playerVolume);
+    }
+  }, [playerVolume, isMuted]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <Space style={{ display: "flex" }}>
-        <Tooltip title={muted ? "Unmute" : "Mute"}>
-          <div
-            onClick={() => {
-              playerService
-                .setVolume(muted ? Math.round(volume * 100) : 0)
-                .then();
-              setVolume(muted ? volume : 0);
-            }}
-            style={{ cursor: "pointer", color: "#ffffff" }}
-          >
-            {getIcon(muted ? 0 : volume)}
-          </div>
-        </Tooltip>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "90px",
+    <div className={styles.container}>
+      <Tooltip title={isMuted ? "Bật âm" : "Tắt âm"}>
+        <button
+          onClick={() => {
+            if (isMuted) {
+              setPlayerVolume(prevVolume || 0.8);
+              setVolume(prevVolume || 0.8);
+            } else {
+              setPrevVolume(volume);
+            }
+            toggleMute();
           }}
+          className={styles.volumeBtn}
         >
-          <Slider
-            isEnabled
-            value={muted ? 0 : volume}
-            onChange={(value) => {
-              setVolume(value);
-            }}
-            onChangeEnd={(value) => {
-              setVolume(value);
-              playerService.setVolume(Math.round(value * 100)).then();
-            }}
-          />
-        </div>
-      </Space>
+          <VolumeIcon volume={volume} muted={isMuted} />
+        </button>
+      </Tooltip>
+
+      <div className={styles.sliderWrapper}>
+        <Slider
+          isEnabled
+          value={isMuted ? 0 : volume}
+          onChange={(value) => {
+            setVolume(value);
+          }}
+          onChangeEnd={(value) => {
+            setVolume(value);
+            setPlayerVolume(value);
+            if (value > 0 && isMuted) {
+              toggleMute();
+            }
+          }}
+        />
+      </div>
     </div>
   );
 });

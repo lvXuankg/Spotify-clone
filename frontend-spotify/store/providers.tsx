@@ -6,9 +6,10 @@ import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "@/store/store";
 import { ConfigProvider, App as AntdApp } from "antd";
 import { ToasterProvider } from "@/components/providers/ToasterProvider";
+import { AudioPlayerProvider } from "@/components/providers/AudioPlayerProvider";
 
 interface ProvidersProps {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps) {
@@ -37,7 +38,7 @@ export function Providers({ children }: ProvidersProps) {
         >
           <AntdApp>
             <ToasterProvider />
-            {children}
+            <AudioPlayerProvider>{children}</AudioPlayerProvider>
           </AntdApp>
         </ConfigProvider>
       </PersistGate>

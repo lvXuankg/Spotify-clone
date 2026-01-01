@@ -2,8 +2,55 @@
 
 import { memo, FC } from "react";
 import { Card, Image } from "antd";
-import Link from "next/link";
-import type { Track, Album, Artist, Playlist } from "@/interfaces";
+
+// Local interfaces for Spotify-like data structures
+interface SpotifyImage {
+  url: string;
+  height?: number;
+  width?: number;
+}
+
+interface SpotifyArtist {
+  id: string;
+  name: string;
+  images?: SpotifyImage[];
+}
+
+interface SpotifyAlbum {
+  id: string;
+  name: string;
+  images?: SpotifyImage[];
+  artists?: SpotifyArtist[];
+}
+
+interface Track {
+  id: string;
+  name: string;
+  album?: SpotifyAlbum;
+  artists?: SpotifyArtist[];
+}
+
+interface Album {
+  id: string;
+  name: string;
+  images?: SpotifyImage[];
+  artists?: SpotifyArtist[];
+}
+
+interface Artist {
+  id: string;
+  name: string;
+  images?: SpotifyImage[];
+}
+
+interface Playlist {
+  id: string;
+  name: string;
+  images?: SpotifyImage[];
+  owner?: {
+    display_name?: string;
+  };
+}
 
 // TrackCard
 export const TrackCard: FC<{

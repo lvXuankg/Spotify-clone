@@ -1,75 +1,55 @@
 "use client";
 
 import { memo } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/store";
-import { playerActions } from "@/store/slices/player";
+import { useAppSelector } from "@/store/store";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
+import { CustomerServiceOutlined } from "@ant-design/icons";
+import Link from "next/link";
+
+import styles from "./SongDetails.module.css";
 
 const SongDetails = memo(() => {
-  const dispatch = useAppDispatch();
+  const { currentTrack } = useAudioPlayerContext();
+  const reduxTrack = useAppSelector((state) => state.player.currentTrack);
 
-  const currentTrack = useAppSelector((state) => state.player.currentTrack);
-  const isLiked = useAppSelector((state) => state.player.isLiked);
+  // Use audio context track or fall back to redux
+  const track = currentTrack || reduxTrack;
 
-  if (!currentTrack) {
-    return <div style={{ minWidth: 295 }}></div>;
+  if (!track) {
+    return <div className={styles.empty}></div>;
   }
 
-  const handleToggle = () => {
-    dispatch(playerActions.setLiked(!isLiked));
-  };
+  // Get display values from either source
+  const title = currentTrack?.title || reduxTrack?.name || "Unknown";
+  const artistName =
+    currentTrack?.artistName ||
+    reduxTrack?.artists?.map((a: any) => a.name).join(", ") ||
+    "Unknown Artist";
+  const albumCover =
+    currentTrack?.albumCoverUrl || reduxTrack?.album?.images?.[0]?.url;
+  const albumId = currentTrack?.albumId || reduxTrack?.album?.id;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        minWidth: 295,
-      }}
-    >
-      <div style={{ marginRight: 15 }}>
-        <div style={{ position: "relative" }}>
-          <img
-            alt="Album Cover"
-            src={currentTrack?.album?.images?.[0]?.url}
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "4px",
-              objectFit: "cover",
-            }}
-          />
-          <button
-            onClick={handleToggle}
-            style={{
-              position: "absolute",
-              bottom: "4px",
-              right: "4px",
-              background: "#1db954",
-              border: "none",
-              borderRadius: "50%",
-              width: "24px",
-              height: "24px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: isLiked ? "#ffffff" : "#000000",
-              fontSize: "12px",
-            }}
-          >
-            {isLiked ? "❤️" : "🤍"}
-          </button>
-        </div>
+    <div className={styles.container}>
+      <div className={styles.coverWrapper}>
+        {albumCover ? (
+          <img alt="Album Cover" src={albumCover} className={styles.cover} />
+        ) : (
+          <div className={styles.placeholder}>
+            <CustomerServiceOutlined className={styles.placeholderIcon} />
+          </div>
+        )}
       </div>
 
-      <div style={{ color: "#ffffff" }}>
-        <p style={{ margin: 0, fontWeight: "bold", fontSize: "14px" }}>
-          {currentTrack?.name}
-        </p>
-        <p style={{ margin: 0, color: "#b3b3b3", fontSize: "12px" }}>
-          {currentTrack?.artists?.map((a: any) => a.name).join(", ")}
-        </p>
+      <div className={styles.info}>
+        {albumId ? (
+          <Link href={`/album/${albumId}`} className={styles.title}>
+            {title}
+          </Link>
+        ) : (
+          <span className={styles.title}>{title}</span>
+        )}
+        <span className={styles.artist}>{artistName}</span>
       </div>
     </div>
   );

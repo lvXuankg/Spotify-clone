@@ -8,6 +8,7 @@ export interface AppConfig {
   albumService: AlbumRabbitMQ;
   songService: SongRabbitMQ;
   playlistService: PlaylistRabbitMQ;
+  streamService: StreamRabbitMQ;
   http: HttpConfig;
 }
 
@@ -48,6 +49,12 @@ export interface SongRabbitMQ {
 }
 
 export interface PlaylistRabbitMQ {
+  urls: string[];
+  queue: string;
+  durable: boolean;
+}
+
+export interface StreamRabbitMQ {
   urls: string[];
   queue: string;
   durable: boolean;
@@ -116,6 +123,14 @@ export const getConfig = (): AppConfig => ({
     ],
     queue: process.env.PLAYLIST_SERVICE_RABBITMQ_QUEUE || 'playlist_queue',
     durable: process.env.PLAYLIST_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+  },
+  streamService: {
+    urls: [
+      process.env.STREAM_SERVICE_RABBITMQ_URL ||
+        'amqp://admin:1234@localhost:5672',
+    ],
+    queue: process.env.STREAM_SERVICE_RABBITMQ_QUEUE || 'stream_queue',
+    durable: process.env.STREAM_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
   },
   http: {
     port: parseInt(process.env.PORT || '8080', 10),

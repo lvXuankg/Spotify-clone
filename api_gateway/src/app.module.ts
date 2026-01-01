@@ -12,6 +12,7 @@ import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { SongModule } from './song/song.module';
 import { PlaylistModule } from './playlist/playlist.module';
+import { StreamModule } from './stream/stream.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PlaylistModule } from './playlist/playlist.module';
     AlbumModule,
     SongModule,
     PlaylistModule,
+    StreamModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,37 +4,19 @@ import { memo } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/store";
 import { uiActions } from "@/store/slices/ui";
 import VolumeControls from "./Volume";
-
-// Icons
-const DetailsIcon = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.7 }}>📋</span>
-);
-const QueueIcon = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.7 }}>📝</span>
-);
-const ExpandIcon = () => <span>⛶</span>;
-const MicrophoneIcon = () => <span>🎤</span>;
-const DeviceIcon = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.7 }}>📱</span>
-);
-const PhoneIcon = ({ active }: { active: boolean }) => (
-  <span style={{ opacity: active ? 1 : 0.7 }}>☎️</span>
-);
+import {
+  UnorderedListOutlined,
+  ExpandOutlined,
+  CustomerServiceOutlined,
+  LaptopOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+import styles from "./ExtraButtons.module.css";
 
 const LyricsButton = memo(() => {
   return (
-    <button
-      style={{
-        marginLeft: 5,
-        marginRight: 5,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "#ffffff",
-      }}
-      title="Lyrics"
-    >
-      <MicrophoneIcon />
+    <button className={styles.iconBtn} title="Lyrics">
+      <CustomerServiceOutlined />
     </button>
   );
 });
@@ -45,18 +27,11 @@ const DetailsButton = memo(() => {
 
   return (
     <button
-      style={{
-        marginLeft: 5,
-        marginRight: 10,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: active ? "#1db954" : "#ffffff",
-      }}
+      className={`${styles.iconBtn} ${active ? styles.active : ""}`}
       onClick={() => dispatch(uiActions.toggleDetails())}
       title="Now playing view"
     >
-      <DetailsIcon active={active} />
+      <InfoCircleOutlined />
     </button>
   );
 });
@@ -68,34 +43,18 @@ const QueueButton = memo(() => {
   return (
     <button
       onClick={() => dispatch(uiActions.toggleQueue())}
-      style={{
-        marginLeft: 10,
-        marginRight: 5,
-        background: "none",
-        border: "none",
-        cursor: queueCollapsed ? "pointer" : "not-allowed",
-        color: !queueCollapsed ? "#1db954" : "#ffffff",
-      }}
+      className={`${styles.iconBtn} ${!queueCollapsed ? styles.active : ""}`}
       title="Queue"
     >
-      <QueueIcon active={!queueCollapsed} />
+      <UnorderedListOutlined />
     </button>
   );
 });
 
 const ExpandButton = memo(() => {
   return (
-    <button
-      style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "#ffffff",
-        marginLeft: 10,
-      }}
-      title="Full Screen"
-    >
-      <ExpandIcon />
+    <button className={styles.iconBtn} title="Full Screen">
+      <ExpandOutlined />
     </button>
   );
 });
@@ -107,24 +66,17 @@ const DeviceButton = memo(() => {
   return (
     <button
       onClick={() => dispatch(uiActions.toggleDevices())}
-      className={isDeviceOpen ? "active-icon-button" : ""}
-      style={{
-        marginTop: 4,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: isDeviceOpen ? "#1db954" : "#ffffff",
-      }}
+      className={`${styles.iconBtn} ${isDeviceOpen ? styles.active : ""}`}
       title="Connect to a device"
     >
-      <DeviceIcon active={isDeviceOpen} />
+      <LaptopOutlined />
     </button>
   );
 });
 
 const ExtraControlButtons = memo(() => {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+    <div className={styles.container}>
       <VolumeControls />
       <LyricsButton />
       <DetailsButton />
@@ -135,5 +87,10 @@ const ExtraControlButtons = memo(() => {
   );
 });
 
+LyricsButton.displayName = "LyricsButton";
+DetailsButton.displayName = "DetailsButton";
+QueueButton.displayName = "QueueButton";
+ExpandButton.displayName = "ExpandButton";
+DeviceButton.displayName = "DeviceButton";
 ExtraControlButtons.displayName = "ExtraControlButtons";
 export default ExtraControlButtons;

@@ -18,6 +18,7 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import type { Song } from "@/interfaces/song";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
 import styles from "./page.module.css";
 
 const DEFAULT_COVER = "https://misc.scdn.co/liked-songs/liked-songs-640.png";
@@ -35,6 +36,7 @@ const AlbumPage = memo(() => {
   const params = useParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { playSongs, playSong } = useAudioPlayerContext();
 
   const albumId = params.id as string;
   const album = useAppSelector(selectCurrentAlbum);
@@ -164,6 +166,21 @@ const AlbumPage = memo(() => {
             size="large"
             icon={<PlayCircleFilled />}
             className={styles.playButton}
+            onClick={() => {
+              if (songs.length > 0) {
+                // Add album info to songs for AudioPlayer
+                const songsWithAlbum = songs.map((song: Song) => ({
+                  ...song,
+                  albums: {
+                    id: album.id,
+                    title: album.title,
+                    cover_url: album.cover_url,
+                    artists: album.artists,
+                  },
+                }));
+                playSongs(songsWithAlbum, 0);
+              }
+            }}
           />
         </div>
 
@@ -179,6 +196,32 @@ const AlbumPage = memo(() => {
             showHeader={true}
             locale={{ emptyText: "Chưa có bài hát nào" }}
             rowClassName={styles.songRow}
+            onRow={(record: Song, index) => ({
+              onClick: () => {
+                // Add album info to song for AudioPlayer
+                const songWithAlbum = {
+                  ...record,
+                  albums: {
+                    id: album.id,
+                    title: album.title,
+                    cover_url: album.cover_url,
+                    artists: album.artists,
+                  },
+                };
+                // Play this song and queue the rest
+                const songsWithAlbum = songs.map((song: Song) => ({
+                  ...song,
+                  albums: {
+                    id: album.id,
+                    title: album.title,
+                    cover_url: album.cover_url,
+                    artists: album.artists,
+                  },
+                }));
+                playSongs(songsWithAlbum, index ?? 0);
+              },
+              style: { cursor: "pointer" },
+            })}
           />
         </div>
 

@@ -1,0 +1,87 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controlBtn {
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.controlBtn:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.controlBtn.active {
+  color: #1db954;
+}
+
+.controlBtn.active:hover {
+  color: #1ed760;
+}
+
+.controlBtn.disabled {
+  color: #535353;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.controlBtn.disabled:hover {
+  transform: none;
+  color: #535353;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.playBtn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playBtn:hover {
+  transform: scale(1.1);
+}
+
+.playBtn.disabled {
+  color: #535353;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.playBtn.disabled:hover {
+  transform: none;
+}
+
+.playIcon {
+  font-size: 36px;
+}
+
+.repeatOne {
+  position: absolute;
+  font-size: 9px;
+  font-weight: bold;
+  bottom: 2px;
+  right: 2px;
+  color: #1db954;
+}

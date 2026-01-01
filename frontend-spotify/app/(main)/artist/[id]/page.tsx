@@ -2,21 +2,22 @@
 
 import { memo, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { artistActions } from "@/store/slices/artist";
+import { fetchArtistById } from "@/store/slices/artist";
 import { useParams } from "next/navigation";
 import {
   Row,
   Col,
   Button,
-  Space,
-  Card,
   Empty,
   Skeleton,
   Avatar,
   Divider,
+  Typography,
 } from "antd";
 import PageHeader from "@/components/layout/PageHeader";
 import { PlayCircleOutlined, UserOutlined } from "@ant-design/icons";
+
+const { Title, Paragraph, Text } = Typography;
 
 const ArtistPage = memo(() => {
   const dispatch = useAppDispatch();
@@ -25,26 +26,33 @@ const ArtistPage = memo(() => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const artistId = params.id as string;
-  const artist = useAppSelector((state) => state.artist.artist);
-  const topTracks = useAppSelector((state) => state.artist.topTracks);
-  const albums = useAppSelector((state) => state.artist.albums);
+  const artist = useAppSelector((state) => state.artist.currentArtist);
   const loading = useAppSelector((state) => state.artist.loading);
 
   useEffect(() => {
     if (artistId) {
-      dispatch(artistActions.fetchArtist(artistId));
-      dispatch(artistActions.fetchArtistTopTracks(artistId));
-      dispatch(artistActions.fetchArtistAlbums(artistId));
+      dispatch(fetchArtistById(artistId));
     }
   }, [artistId, dispatch]);
 
   if (loading) {
-    return <Skeleton active count={5} />;
+    return (
+      <div style={{ padding: "30px" }}>
+        <Skeleton active avatar={{ size: 200 }} paragraph={{ rows: 5 }} />
+      </div>
+    );
   }
 
   if (!artist) {
     return <Empty description="Artist not found" />;
   }
+
+  // Get display name (support both snake_case and camelCase)
+  const displayName =
+    artist.display_name || artist.displayName || "Unknown Artist";
+  const avatarUrl = artist.avatar_url || artist.avatarUrl;
+  const coverImageUrl = artist.cover_image_url || artist.coverImageUrl;
+  const bio = artist.bio;
 
   return (
     <div ref={containerRef} style={{ height: "100%", overflowY: "auto" }}>
@@ -57,10 +65,11 @@ const ArtistPage = memo(() => {
           <Col xs={24} sm={8}>
             <Avatar
               size={200}
-              src={artist.images[0]?.url}
+              src={avatarUrl || coverImageUrl}
               icon={<UserOutlined />}
               style={{
                 width: "100%",
+                maxWidth: "200px",
                 height: "auto",
                 borderRadius: "50%",
               }}
@@ -68,8 +77,11 @@ const ArtistPage = memo(() => {
           </Col>
           <Col xs={24} sm={16}>
             <div>
-              <span style={{ color: "#b3b3b3" }}>ARTIST</span>
-              <h1
+              <Text style={{ color: "#b3b3b3", textTransform: "uppercase" }}>
+                Artist
+              </Text>
+              <Title
+                level={1}
                 style={{
                   fontSize: "48px",
                   fontWeight: "bold",
@@ -77,11 +89,13 @@ const ArtistPage = memo(() => {
                   margin: "16px 0",
                 }}
               >
-                {artist.name}
-              </h1>
-              <p style={{ color: "#b3b3b3", margin: 0 }}>
-                {artist.followers?.total?.toLocaleString()} followers
-              </p>
+                {displayName}
+              </Title>
+              {bio && (
+                <Paragraph style={{ color: "#b3b3b3", margin: 0 }}>
+                  {bio}
+                </Paragraph>
+              )}
             </div>
           </Col>
         </Row>
@@ -92,82 +106,56 @@ const ArtistPage = memo(() => {
           type="primary"
           icon={<PlayCircleOutlined />}
           size="large"
-          style={{ marginBottom: "30px" }}
+          style={{
+            marginBottom: "30px",
+            backgroundColor: "#1db954",
+            borderColor: "#1db954",
+          }}
         >
           Play
         </Button>
 
-        <Divider />
+        <Divider style={{ borderColor: "#282828" }} />
 
-        {/* Top Tracks */}
-        <h2
-          style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}
+        {/* Artist Info */}
+        <Title level={3} style={{ color: "#ffffff", marginBottom: "16px" }}>
+          About
+        </Title>
+        <div
+          style={{
+            backgroundColor: "#282828",
+            padding: "24px",
+            borderRadius: "8px",
+          }}
         >
-          Top Tracks
-        </h2>
-        <Row gutter={[16, 16]} style={{ marginBottom: "40px" }}>
-          {topTracks.slice(0, 5).map((track, index) => (
-            <Col key={track.id} span={24}>
-              <Card
-                style={{
-                  backgroundColor: "#282828",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <Row align="middle" gutter={16}>
-                  <Col span={1}>{index + 1}</Col>
-                  <Col span={16}>
-                    <span style={{ color: "#ffffff" }}>{track.name}</span>
-                  </Col>
-                  <Col
-                    span={7}
-                    style={{ textAlign: "right", color: "#b3b3b3" }}
-                  >
-                    {Math.floor(track.duration_ms / 60000)}:
-                    {((track.duration_ms % 60000) / 1000)
-                      .toFixed(0)
-                      .padStart(2, "0")}
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+          {bio ? (
+            <Paragraph style={{ color: "#b3b3b3", marginBottom: 0 }}>
+              {bio}
+            </Paragraph>
+          ) : (
+            <Text style={{ color: "#b3b3b3" }}>No bio available</Text>
+          )}
+        </div>
 
-        <Divider />
-
-        {/* Albums */}
-        <h2
-          style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}
-        >
-          Albums
-        </h2>
-        <Row gutter={[16, 16]}>
-          {albums.slice(0, 6).map((album) => (
-            <Col key={album.id} xs={24} sm={12} md={8} lg={6}>
-              <Card
-                hoverable
-                cover={
-                  <img
-                    alt={album.name}
-                    src={album.images[0]?.url}
-                    style={{ height: "200px", objectFit: "cover" }}
-                  />
-                }
-              >
-                <Card.Meta
-                  title={<span style={{ color: "#ffffff" }}>{album.name}</span>}
-                  description={
-                    <span style={{ color: "#b3b3b3" }}>
-                      {album.release_date?.split("-")[0]}
-                    </span>
-                  }
-                />
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        {/* Cover Image if available */}
+        {coverImageUrl && (
+          <>
+            <Divider style={{ borderColor: "#282828" }} />
+            <Title level={3} style={{ color: "#ffffff", marginBottom: "16px" }}>
+              Cover
+            </Title>
+            <img
+              src={coverImageUrl}
+              alt={displayName}
+              style={{
+                width: "100%",
+                maxWidth: "600px",
+                borderRadius: "8px",
+                objectFit: "cover",
+              }}
+            />
+          </>
+        )}
       </div>
     </div>
   );

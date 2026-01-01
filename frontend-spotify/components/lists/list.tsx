@@ -108,7 +108,7 @@ export const GridItemList: FC<{
         }}
       >
         {(items || []).map((item) => (
-          <div key={item.id || item.uri} style={{ position: "relative" }}>
+          <div key={item.id} style={{ position: "relative" }}>
             <GridItemComponent
               item={item}
               getDescription={getDescription}
@@ -143,11 +143,14 @@ const GridItemComponent: FC<{
     }
   };
 
-  if (item.type === "track") {
+  // Detect type based on properties (since 'type' may not exist on all interfaces)
+  const itemType = (item as any).type;
+
+  if (itemType === "track" || ("artists" in item && "album" in item)) {
     return <TrackCard item={item} onClick={handleClick} />;
   }
 
-  if (item.type === "album") {
+  if (itemType === "album" || ("release_date" in item && !("owner" in item))) {
     return (
       <AlbumCard
         item={item}
@@ -157,7 +160,7 @@ const GridItemComponent: FC<{
     );
   }
 
-  if (item.type === "playlist") {
+  if (itemType === "playlist" || "owner" in item) {
     return (
       <PlaylistCard
         item={item}
@@ -167,7 +170,7 @@ const GridItemComponent: FC<{
     );
   }
 
-  if (item.type === "artist") {
+  if (itemType === "artist" || ("display_name" in item && !("owner" in item))) {
     return (
       <ArtistCard
         item={item}

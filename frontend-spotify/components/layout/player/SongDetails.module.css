@@ -1,0 +1,70 @@
+.empty {
+  min-width: 295px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 295px;
+  gap: 12px;
+}
+
+.coverWrapper {
+  flex-shrink: 0;
+}
+
+.cover {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #282828 0%, #3e3e3e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderIcon {
+  color: #b3b3b3;
+  font-size: 24px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.title {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.title:hover {
+  text-decoration: underline;
+  color: #1db954;
+}
+
+.artist {
+  color: #a7a7a7;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

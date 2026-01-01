@@ -1,7 +1,7 @@
 "use client";
 
 import { AddPlaylistButton } from "./AddPlaylistButton";
-import { LibraryIcon, CloseOutlined } from "@ant-design/icons";
+import { FolderOutlined, CloseOutlined } from "@ant-design/icons";
 import { memo } from "react";
 import { Flex, Space, Button, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
@@ -41,7 +41,7 @@ export const LibraryTitle = memo(() => {
           }}
           onClick={() => dispatch(uiActions.toggleLibrary())}
         >
-          <LibraryIcon style={{ fontSize: "20px" }} />
+          <FolderOutlined style={{ fontSize: "20px" }} />
         </button>
       </Tooltip>
     );
@@ -53,7 +53,7 @@ export const LibraryTitle = memo(() => {
         <Tooltip placement="top" title={t("Collapse your library")}>
           <Button
             type="text"
-            icon={<LibraryIcon />}
+            icon={<FolderOutlined />}
             onClick={() => dispatch(uiActions.toggleLibrary())}
           />
         </Tooltip>

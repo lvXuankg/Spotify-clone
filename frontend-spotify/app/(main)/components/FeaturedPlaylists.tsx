@@ -4,24 +4,27 @@ import { memo } from "react";
 import { useAppSelector } from "@/store/store";
 import { Row, Col, Card, Image, Typography } from "antd";
 import { useRouter } from "next/navigation";
+import type { PublicPlaylistItem } from "@/interfaces/playlists";
 
 const { Paragraph } = Typography;
 
 const FeaturedPlaylists = memo(() => {
   const router = useRouter();
-  const playlists = useAppSelector((state) => state.home.featuredPlaylists);
+  const playlists = useAppSelector(
+    (state) => state.home.latestPlaylists
+  ) as PublicPlaylistItem[];
 
   return (
     <Row gutter={[16, 16]}>
-      {playlists.slice(0, 6).map((playlist) => (
+      {playlists.slice(0, 6).map((playlist: PublicPlaylistItem) => (
         <Col key={playlist.id} xs={24} sm={12} md={8} lg={6}>
           <Card
             hoverable
             onClick={() => router.push(`/playlist/${playlist.id}`)}
             cover={
               <Image
-                src={playlist.images[0]?.url}
-                alt={playlist.name}
+                src={playlist.cover_url || "/images/default-playlist.png"}
+                alt={playlist.title}
                 style={{
                   height: "200px",
                   objectFit: "cover",
@@ -38,10 +41,10 @@ const FeaturedPlaylists = memo(() => {
               title={
                 <span
                   style={{ color: "#ffffff" }}
-                  title={playlist.name}
+                  title={playlist.title}
                   className="line-clamp-2"
                 >
-                  {playlist.name}
+                  {playlist.title}
                 </span>
               }
               description={

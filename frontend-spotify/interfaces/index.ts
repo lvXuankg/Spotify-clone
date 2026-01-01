@@ -2,3 +2,4 @@
 export type * from "./file.d";
 export type * from "./user.d";
 export type * from "./auth.interface";
+export type * from "./stream.d";

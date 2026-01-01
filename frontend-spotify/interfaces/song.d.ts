@@ -19,6 +19,7 @@ export interface SongWithAlbum extends Song {
   albums: {
     id: string;
     title: string;
+    cover_url?: string | null;
     artists: {
       id: string;
       display_name: string;

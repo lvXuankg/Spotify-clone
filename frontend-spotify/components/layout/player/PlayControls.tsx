@@ -3,19 +3,11 @@
 import { memo } from "react";
 import ControlButtons from "./ControlButtons";
 import SongProgressBar from "./SongProgressBar";
+import styles from "./PlayControls.module.css";
 
 const PlayControls = memo(() => {
   return (
-    <div
-      style={{
-        marginTop: 5,
-        marginBottom: -5,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "40%",
-      }}
-    >
+    <div className={styles.container}>
       <ControlButtons />
       <SongProgressBar />
     </div>

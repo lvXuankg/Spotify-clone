@@ -1,0 +1,11 @@
+﻿{
+  "mappings": {
+    "properties": {
+      "name": {"type": "text", "analyzer": "standard"},
+      "description": {"type": "text"},
+      "cover_url": {"type": "keyword"},
+      "owner": {"type": "text"},
+      "type": {"type": "keyword"}
+    }
+  }
+}

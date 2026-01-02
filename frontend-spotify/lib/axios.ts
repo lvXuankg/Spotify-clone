@@ -16,11 +16,25 @@ const api = axios.create({
 // List các endpoint không được retry token
 const NO_RETRY_ENDPOINTS = ["/login", "/register", "/refreshToken"];
 
+// Flag để ngăn gọi API khi đang redirect về login
+let isRedirectingToLogin = false;
+
 /**
  * Request interceptor: Convert snake_case (Database format) → camelCase (Backend expects)
  * Frontend uses snake_case (from database), convert to camelCase before sending to Backend
  */
 api.interceptors.request.use((config) => {
+  // Nếu đang redirect về login, cancel tất cả request (trừ auth endpoints)
+  if (isRedirectingToLogin) {
+    const endpoint = config.url || "";
+    const isAuthEndpoint = NO_RETRY_ENDPOINTS.some((ep) =>
+      endpoint.includes(ep)
+    );
+    if (!isAuthEndpoint) {
+      return Promise.reject(new axios.Cancel("Redirecting to login"));
+    }
+  }
+
   if (config.data && typeof config.data === "object") {
     // Convert object keys từ snake_case → camelCase trước khi gửi
     config.data = transformSnakeToCamelCase(config.data);
@@ -33,8 +47,13 @@ api.interceptors.response.use(
     return res;
   },
   async (err) => {
+    // Nếu request bị cancel do đang redirect, không xử lý gì thêm
+    if (axios.isCancel(err)) {
+      return Promise.reject(err);
+    }
+
     const original = err.config;
-    const endpoint = original.url || "";
+    const endpoint = original?.url || "";
 
     // Nếu là auth endpoint (login, register) → không retry, trả về lỗi ngay
     const isAuthEndpoint = NO_RETRY_ENDPOINTS.some((ep) =>
@@ -42,6 +61,11 @@ api.interceptors.response.use(
     );
 
     if (isAuthEndpoint) {
+      return Promise.reject(err);
+    }
+
+    // Nếu đang redirect về login, không retry
+    if (isRedirectingToLogin) {
       return Promise.reject(err);
     }
 
@@ -61,12 +85,18 @@ api.interceptors.response.use(
         // Token refresh thất bại → clear frontend auth state
         console.log("🚨 REFRESH TOKEN FAILED - clearing frontend auth state");
 
+        // Set flag để ngăn các request khác
+        isRedirectingToLogin = true;
+
         // Clear localStorage persist
         localStorage.removeItem("persist:root");
         localStorage.removeItem("userId");
 
-        // Reload page để Redux reset
-        window.location.reload();
+        // Redirect về login page thay vì reload để tránh vòng lặp vô hạn
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/login" && currentPath !== "/register") {
+          window.location.href = "/login";
+        }
 
         return Promise.reject(refreshError);
       }

@@ -16,6 +16,7 @@ export class HealthService {
     @Inject('SONG_SERVICE') private songServiceClient: ClientProxy,
     @Inject('PLAYLIST_SERVICE') private playlistServiceClient: ClientProxy,
     @Inject('STREAM_SERVICE') private streamServiceClient: ClientProxy,
+    @Inject('SEARCH_SERVICE') private searchServiceClient: ClientProxy,
     private readonly logger: LoggerService,
   ) {}
 
@@ -127,6 +128,13 @@ export class HealthService {
       this.streamServiceClient,
     );
     services.push(streamServiceHealth);
+
+    // Check Search Service
+    const searchServiceHealth = await this.checkServiceHealth(
+      'Search Service',
+      this.searchServiceClient,
+    );
+    services.push(searchServiceHealth);
 
     // Determine overall status
     const allHealthy = services.every((s) => s.status === 'up');

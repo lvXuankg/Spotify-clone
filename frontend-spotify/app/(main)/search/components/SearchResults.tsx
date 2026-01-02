@@ -3,7 +3,9 @@
 import { memo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Image, Empty, Spin, Pagination, Typography } from "antd";
+import { PlayCircleFilled } from "@ant-design/icons";
 import { SearchResult } from "@/services/search.service";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
 import styles from "./SearchResults.module.css";
 
 const { Title, Paragraph } = Typography;
@@ -27,6 +29,7 @@ const SearchResults = memo(
     onPageChange,
   }: SearchResultsProps) => {
     const router = useRouter();
+    const { playSong } = useAudioPlayerContext();
 
     if (loading) {
       return (
@@ -62,7 +65,31 @@ const SearchResults = memo(
     const handleCardClick = (result: SearchResult) => {
       switch (result.type) {
         case "song":
-          router.push(`/album/${result.id}`);
+          // Play song directly instead of navigating
+          if (result.audio_url) {
+            const songToPlay = {
+              id: result.id,
+              album_id: "",
+              title: result.title || "",
+              audio_url: result.audio_url,
+              duration_seconds: result.duration || 0,
+              disc_number: 1,
+              is_explicit: false,
+              play_count: 0,
+              created_at: "",
+              updated_at: "",
+              albums: {
+                id: "",
+                title: result.album || "",
+                cover_url: result.cover_url,
+                artists: { id: "", display_name: result.artist || "" },
+              },
+            };
+            playSong(songToPlay);
+          } else {
+            // Fallback: if no audio_url, just log warning
+            console.warn("Song audio_url not available in search result");
+          }
           break;
         case "artist":
           router.push(`/artist/${result.id}`);

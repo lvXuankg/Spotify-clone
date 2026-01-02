@@ -18,7 +18,10 @@ export async function sendMicroserviceRequest(
   try {
     return await firstValueFrom(client.send(pattern, data));
   } catch (error) {
-    console.log(error);
+    // Chỉ log lỗi không phải connection errors để tránh spam
+    if (error?.code !== 'ECONNRESET' && error?.code !== 'ECONNREFUSED') {
+      console.log(`[RPC Error] ${pattern}:`, error?.message || error);
+    }
     if (error && typeof error === 'object' && error.statusCode) {
       throw new HttpException(error.message, error.statusCode);
     }

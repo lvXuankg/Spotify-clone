@@ -1,0 +1,12 @@
+﻿{
+  "mappings": {
+    "properties": {
+      "title": {"type": "text", "analyzer": "standard"},
+      "artist": {"type": "text"},
+      "album": {"type": "text"},
+      "duration": {"type": "integer"},
+      "cover_url": {"type": "keyword"},
+      "type": {"type": "keyword"}
+    }
+  }
+}

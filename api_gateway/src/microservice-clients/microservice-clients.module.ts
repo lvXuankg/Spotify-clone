@@ -94,6 +94,17 @@ import { getConfig } from 'src/config';
           },
         },
       },
+      {
+        name: 'SEARCH_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: getConfig().searchService.urls,
+          queue: getConfig().searchService.queue,
+          queueOptions: {
+            durable: getConfig().searchService.durable,
+          },
+        },
+      },
     ]),
   ],
   exports: [ClientsModule],

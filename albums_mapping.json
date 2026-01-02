@@ -1,0 +1,11 @@
+﻿{
+  "mappings": {
+    "properties": {
+      "title": {"type": "text", "analyzer": "standard"},
+      "artist": {"type": "text"},
+      "cover_url": {"type": "keyword"},
+      "release_date": {"type": "date"},
+      "type": {"type": "keyword"}
+    }
+  }
+}

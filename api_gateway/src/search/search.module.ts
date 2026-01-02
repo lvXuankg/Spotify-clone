@@ -1,24 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
+import { MicroserviceClientsModule } from '../microservice-clients/microservice-clients.module';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: 'SEARCH_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: [
-            process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672',
-          ],
-          queue: 'search-queue',
-          queueOptions: { durable: true },
-        },
-      },
-    ]),
-  ],
+  imports: [MicroserviceClientsModule],
   controllers: [SearchController],
   providers: [SearchService],
   exports: [SearchService],

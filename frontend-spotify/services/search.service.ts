@@ -6,8 +6,12 @@ export interface SearchResult {
   title?: string;
   name?: string;
   artist?: string;
+  album?: string;
+  album_id?: string;
   description?: string;
   cover_url?: string;
+  duration?: number;
+  audio_url?: string;
   score?: number;
 }
 

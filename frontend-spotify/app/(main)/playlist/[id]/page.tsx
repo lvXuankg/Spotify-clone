@@ -33,10 +33,12 @@ import {
 import { yourLibraryActions } from "@/store/slices/yourLibrary";
 import { useUploadFile } from "@/hooks/useUploadFile";
 import { useToast } from "@/hooks/useToast";
+import { useAudioPlayerContext } from "@/components/providers/AudioPlayerProvider";
 import PageHeader from "@/components/layout/PageHeader";
 import { AddSongModal } from "./components/AddSongModal";
 import { EditPlaylistModal } from "./components/EditPlaylistModal";
 import type { PlaylistSong, UpdatePlaylist } from "@/interfaces/playlists";
+import type { SongWithAlbum } from "@/interfaces/song";
 import { FolderType, ResourceType } from "@/interfaces/file";
 import styles from "./page.module.css";
 
@@ -75,6 +77,7 @@ const PlaylistDetailPage = memo(() => {
   // Hooks
   const { upload, loading: uploadLoading } = useUploadFile();
   const { success, error: showError } = useToast();
+  const { playSong, playSongs } = useAudioPlayerContext();
 
   // Check if current user owns this playlist
   // Debug: log để xem giá trị
@@ -84,6 +87,45 @@ const PlaylistDetailPage = memo(() => {
   //   isAuthenticated,
   // });
   const isOwner = isAuthenticated && playlist?.user_id === currentUserId;
+
+  // Convert PlaylistSong to SongWithAlbum format
+  const convertToSongWithAlbum = (song: PlaylistSong): SongWithAlbum => ({
+    id: song.id,
+    album_id: "",
+    title: song.title,
+    duration_seconds: song.duration,
+    audio_url: song.audio_url,
+    disc_number: 1,
+    is_explicit: false,
+    play_count: 0,
+    created_at: "",
+    updated_at: "",
+    albums: {
+      id: "",
+      title: playlist?.title || "Playlist",
+      cover_url: playlist?.cover_url || undefined,
+      artists: {
+        id: song.artists?.[0]?.id || "",
+        display_name: song.artists?.map((a) => a.display_name).join(", ") || "",
+      },
+    },
+  });
+
+  // Handle play all songs
+  const handlePlayAll = () => {
+    if (playlist?.songs && playlist.songs.length > 0) {
+      const songs = playlist.songs.map(convertToSongWithAlbum);
+      playSongs(songs, 0);
+    }
+  };
+
+  // Handle play single song
+  const handlePlaySong = (record: PlaylistSong, index: number) => {
+    if (playlist?.songs && playlist.songs.length > 0) {
+      const songs = playlist.songs.map(convertToSongWithAlbum);
+      playSongs(songs, index);
+    }
+  };
 
   // Fetch playlist detail
   useEffect(() => {
@@ -372,6 +414,7 @@ const PlaylistDetailPage = memo(() => {
             size="large"
             icon={<PlayCircleFilled />}
             className={styles.playButton}
+            onClick={handlePlayAll}
           />
 
           {isOwner && (
@@ -407,10 +450,9 @@ const PlaylistDetailPage = memo(() => {
             rowKey="id"
             pagination={false}
             className={styles.table}
-            onRow={(record) => ({
-              onClick: () => {
-                console.log("Play song:", record.id);
-              },
+            onRow={(record, index) => ({
+              onClick: () => handlePlaySong(record, index || 0),
+              style: { cursor: "pointer" },
             })}
           />
         ) : (

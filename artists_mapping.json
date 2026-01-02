@@ -1,0 +1,10 @@
+﻿{
+  "mappings": {
+    "properties": {
+      "name": {"type": "text", "analyzer": "standard"},
+      "bio": {"type": "text"},
+      "avatar_url": {"type": "keyword"},
+      "type": {"type": "keyword"}
+    }
+  }
+}

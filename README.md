@@ -289,41 +289,82 @@ Central entry point handling:
 
 ## 📖 API Documentation
 
-### Authentication
-```
-POST /api/auth/register     # Register new user
-POST /api/auth/login        # Login & get JWT
-POST /api/auth/refresh      # Refresh token
+All API endpoints are available through the **API Gateway** at `http://localhost:8080/api`. The API uses JWT authentication via Bearer tokens in the Authorization header. Interactive Swagger documentation is available at `http://localhost:8080/docs` during development.
+
+### 🔐 Authentication APIs
+
+The authentication system handles user registration, login, and token management. Users can register with email and password, and upon successful login, receive access tokens (valid for 15 minutes) and refresh tokens (valid for 30 days). These tokens are also stored in httpOnly secure cookies to prevent XSS attacks. The system supports logout from all devices and automatic token refresh without requiring re-authentication. All authentication endpoints return user data along with token information.
+
+**Related endpoints:** `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/logoutAllDevices`, `POST /api/auth/refreshToken`
+
+### 👤 User Management APIs
+
+User management provides profile access and administrative controls. Authenticated users can retrieve and update their own profile information including username and avatar. Admin users have additional capabilities to view all users with pagination and search, modify user roles (upgrading to memberVip or admin status), and remove users from the system. All profile updates are immediately reflected and admin actions are logged for auditing purposes.
+
+**Related endpoints:** `GET /api/user/profile`, `PATCH /api/user/profile`, `GET /api/user/all` (admin), `PATCH /api/user/:userId/role` (admin), `DELETE /api/user/:userId` (admin)
+
+### 🎤 Artist Management APIs
+
+Artist management allows browsing and administration of artist profiles. All authenticated users can retrieve the complete list of artists with pagination support and view detailed information about specific artists including their biography and associated albums. Admin users can create new artist profiles, update existing artist information, and remove artists from the system. Artist data includes metadata, imagery, and relationships to albums and songs.
+
+**Related endpoints:** `GET /api/artist`, `GET /api/artist/:id`, `POST /api/artist` (admin), `PATCH /api/artist/:id` (admin), `DELETE /api/artist/:id` (admin)
+
+### 💿 Album Management APIs
+
+Album management encompasses the organization of songs into albums with artist associations. Users can browse albums with various sorting options, view detailed album information including track listings and release dates, and discover albums by specific artists. Admin users can create albums for artists, update album metadata and cover artwork, and delete albums when needed. The system supports filtering and pagination for efficient content discovery.
+
+**Related endpoints:** `GET /api/album`, `GET /api/album/:albumId`, `GET /api/album/list/:artistId`, `POST /api/album/:artistId` (admin), `PATCH /api/album/:albumId` (admin), `DELETE /api/album/:albumId` (admin)
+
+### 🎵 Song Management APIs
+
+Song management provides core music content operations including metadata storage and retrieval. Users can access all songs with pagination, retrieve individual song details, and discover songs within albums. The system supports both direct searches and album-based browsing for organized content discovery. Admin users can upload new songs, update metadata like title and duration, and remove songs from the catalog. Each song maintains relationships with albums and artists.
+
+**Related endpoints:** `GET /api/song/all`, `GET /api/song/:id`, `GET /api/song/album/:albumId`, `GET /api/song/search`, `POST /api/song/:albumId` (admin), `PATCH /api/song/:id` (admin), `DELETE /api/song/:id` (admin)
+
+### 📋 Playlist Management APIs
+
+Playlist management enables users to create personalized collections of songs with full control over visibility and content. Users can create new playlists, manage their existing playlists, view public playlists from other users, and add or remove songs from their collections. The system supports both private playlists for personal use and public playlists for community sharing. Each playlist maintains user ownership, creation timestamps, and can contain multiple songs in a specific order.
+
+**Related endpoints:** `POST /api/playlist`, `PATCH /api/playlist/:id`, `DELETE /api/playlist/:id`, `POST /api/playlist/:playlistId/song/:songId`, `DELETE /api/playlist/:playlistId/song/:songId`, `GET /api/playlist/get-my-playlists`, `GET /api/playlist/public`, `GET /api/playlist/:id`
+
+### 🎧 Streaming & Playback Analytics APIs
+
+Streaming APIs track user listening activity and provide personalized analytics. Users can record play events to build listening history, retrieve their play history with date filtering, and view recently played songs. The system generates personalized top songs lists based on listening patterns over various time periods (last week, month, quarter, year, or all-time) and streaming statistics including total plays, unique songs discovered, and total duration listened. Global charts show the most-streamed songs across all users, helping surface popular content. Users can clear their history at any time.
+
+**Related endpoints:** `POST /api/stream/play`, `GET /api/stream/history`, `GET /api/stream/recently-played`, `GET /api/stream/top-songs`, `GET /api/stream/stats`, `GET /api/stream/song/:songId/play-count`, `GET /api/stream/charts`, `DELETE /api/stream/history`
+
+### 🔍 Search APIs
+
+Search functionality leverages Elasticsearch for comprehensive full-text search across the music catalog. Users can perform global searches that return results from songs, artists, albums, and playlists simultaneously, or narrow searches to specific content types. Search supports pagination and result limiting for efficient data retrieval. The system returns ranked results based on relevance, helping users quickly find the content they're looking for from the vast music library.
+
+**Related endpoints:** `GET /api/search`, `GET /api/search/songs`, `GET /api/search/artists`, `GET /api/search/albums`, `GET /api/search/playlists`
+
+### 📁 File Management APIs
+
+File management handles media uploads and metadata storage using Cloudinary for cloud-based storage. Users first request a presigned URL to upload files directly to Cloudinary, then save file metadata to the database after successful upload. This two-step process ensures efficient file storage with proper tracking. The system supports various media types and file sizes, with metadata including file names, MIME types, sizes, and entity relationships. Admin users can delete files when they're no longer needed.
+
+**Related endpoints:** `POST /api/file/presignedUrl`, `POST /api/file/saveMetadata`, `DELETE /api/file` (admin for all files, users for own files)
+
+### Error Responses
+
+All endpoints return standardized error format:
+```json
+{
+  "statusCode": 400,
+  "message": "Error description",
+  "error": "BadRequest"
+}
 ```
 
-### Songs
-```
-GET    /api/song            # Get all songs
-GET    /api/song/:id        # Get song by ID
-POST   /api/song            # Create song (Admin)
-PUT    /api/song/:id        # Update song (Admin)
-DELETE /api/song/:id        # Delete song (Admin)
-```
-
-### Search
-```
-GET /api/search?q=query     # Search all
-GET /api/search/songs       # Search songs
-GET /api/search/artists     # Search artists
-GET /api/search/albums      # Search albums
-GET /api/search/playlists   # Search playlists
-```
-
-### Playlists
-```
-GET    /api/playlist             # Get user playlists
-GET    /api/playlist/:id         # Get playlist details
-POST   /api/playlist             # Create playlist
-PUT    /api/playlist/:id         # Update playlist
-DELETE /api/playlist/:id         # Delete playlist
-POST   /api/playlist/:id/songs   # Add songs
-DELETE /api/playlist/:id/songs   # Remove songs
-```
+Common HTTP status codes:
+- **200**: Success
+- **201**: Created
+- **400**: Bad Request
+- **401**: Unauthorized
+- **403**: Forbidden
+- **404**: Not Found
+- **409**: Conflict
+- **500**: Internal Server Error
 
 ## ⚙️ Environment Variables
 

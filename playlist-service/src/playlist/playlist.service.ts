@@ -6,10 +6,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
+import { SearchClient } from '../search/search.client';
 
 @Injectable()
 export class PlaylistService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private searchClient: SearchClient,
+  ) {}
 
   private async checkIfBelongUser(userId: string, playlistId: string) {
     const playlist = await this.prisma.playlists.findUnique({
@@ -33,7 +37,7 @@ export class PlaylistService {
   }
 
   async create(userId: string, dto: CreatePlaylistDto) {
-    return this.prisma.playlists.create({
+    const playlist = await this.prisma.playlists.create({
       data: {
         title: dto.title,
         user_id: userId,
@@ -42,12 +46,23 @@ export class PlaylistService {
         ...(dto.isPublic !== undefined && { is_public: dto.isPublic }),
       },
     });
+
+    // Index the playlist in Elasticsearch
+    await this.searchClient.indexPlaylist(playlist.id, {
+      title: playlist.title,
+      description: playlist.description,
+      coverUrl: playlist.cover_url,
+      isPublic: playlist.is_public,
+      type: 'playlist',
+    });
+
+    return playlist;
   }
 
   async update(userId: string, playlistId: string, dto: UpdatePlaylistDto) {
     await this.checkIfBelongUser(userId, playlistId);
 
-    return this.prisma.playlists.update({
+    const updatedPlaylist = await this.prisma.playlists.update({
       where: {
         id: playlistId,
       },
@@ -58,6 +73,17 @@ export class PlaylistService {
         ...(dto.title !== undefined && { title: dto.title }),
       },
     });
+
+    // Index the updated playlist in Elasticsearch
+    await this.searchClient.indexPlaylist(updatedPlaylist.id, {
+      title: updatedPlaylist.title,
+      description: updatedPlaylist.description,
+      coverUrl: updatedPlaylist.cover_url,
+      isPublic: updatedPlaylist.is_public,
+      type: 'playlist',
+    });
+
+    return updatedPlaylist;
   }
 
   async delete(playlistId: string, userId?: string) {
@@ -65,11 +91,16 @@ export class PlaylistService {
       await this.checkIfBelongUser(userId, playlistId);
     }
 
-    return this.prisma.playlists.delete({
+    await this.prisma.playlists.delete({
       where: {
         id: playlistId,
       },
     });
+
+    // Delete the playlist from Elasticsearch
+    await this.searchClient.deletePlaylist(playlistId);
+
+    return true;
   }
 
   async addSongToPlaylist(userId: string, playlistId: string, songId: string) {

@@ -6,10 +6,14 @@ import {
 import { PrismaService } from '@src/prisma/prisma.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
+import { SearchClient } from '../search/search.client';
 
 @Injectable()
 export class ArtistService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private searchClient: SearchClient,
+  ) {}
 
   private throwArtistNotFound() {
     throw new NotFoundException({
@@ -26,6 +30,15 @@ export class ArtistService {
         cover_image_url: createArtistDto.coverImageUrl,
         bio: createArtistDto.bio,
       },
+    });
+
+    // Index the artist in Elasticsearch
+    await this.searchClient.indexArtist(artist.id, {
+      displayName: artist.display_name,
+      bio: artist.bio,
+      avatarUrl: artist.avatar_url,
+      coverImageUrl: artist.cover_image_url,
+      type: 'artist',
     });
 
     return artist;
@@ -75,6 +88,15 @@ export class ArtistService {
       },
     });
 
+    // Index the updated artist in Elasticsearch
+    await this.searchClient.indexArtist(updatedArtist.id, {
+      displayName: updatedArtist.display_name,
+      bio: updatedArtist.bio,
+      avatarUrl: updatedArtist.avatar_url,
+      coverImageUrl: updatedArtist.cover_image_url,
+      type: 'artist',
+    });
+
     return updatedArtist;
   }
 
@@ -90,6 +112,9 @@ export class ArtistService {
     await this.prisma.artists.delete({
       where: { id },
     });
+
+    // Delete the artist from Elasticsearch
+    await this.searchClient.deleteArtist(id);
 
     return true;
   }

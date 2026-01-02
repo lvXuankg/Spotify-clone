@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SearchClient } from 'src/search/search.client';
 import { CreateSongDto } from './dto/create-song.dto';
 import { UpdateSongDto } from './dto/update-song.dto';
 
 @Injectable()
 export class SongService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private searchClient: SearchClient,
+  ) {}
 
   async create(albumId: string, dto: CreateSongDto) {
     // Verify album exists
@@ -21,7 +25,7 @@ export class SongService {
       throw new BadRequestException({ message: 'Album không tồn tại' });
     }
 
-    return this.prisma.songs.create({
+    const song = await this.prisma.songs.create({
       data: {
         album_id: albumId,
         title: dto.title,
@@ -32,7 +36,33 @@ export class SongService {
         is_explicit: dto.isExplicit || false,
         bitrate: dto.bitrate,
       },
+      include: {
+        albums: {
+          select: {
+            id: true,
+            title: true,
+            cover_url: true,
+            artists: {
+              select: {
+                id: true,
+                display_name: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    // Index in Elasticsearch
+    await this.searchClient.indexSong(song.id, {
+      title: song.title,
+      artist: song.albums?.artists?.[0]?.display_name || '',
+      album: song.albums?.title || '',
+      duration: song.duration_seconds,
+      cover_url: song.albums?.cover_url || '',
+    });
+
+    return song;
   }
 
   async findAll(albumId: string) {
@@ -74,7 +104,7 @@ export class SongService {
     // Verify song exists
     const song = await this.findOne(id);
 
-    return this.prisma.songs.update({
+    const updated = await this.prisma.songs.update({
       where: { id },
       data: {
         ...(dto.title !== undefined && { title: dto.title }),
@@ -87,16 +117,47 @@ export class SongService {
         ...(dto.isExplicit !== undefined && { is_explicit: dto.isExplicit }),
         ...(dto.bitrate !== undefined && { bitrate: dto.bitrate }),
       },
+      include: {
+        albums: {
+          select: {
+            id: true,
+            title: true,
+            cover_url: true,
+            artists: {
+              select: {
+                id: true,
+                display_name: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    // Re-index in Elasticsearch
+    await this.searchClient.indexSong(updated.id, {
+      title: updated.title,
+      artist: updated.albums?.artists?.[0]?.display_name || '',
+      album: updated.albums?.title || '',
+      duration: updated.duration_seconds,
+      cover_url: updated.albums?.cover_url || '',
+    });
+
+    return updated;
   }
 
   async delete(id: string) {
     // Verify song exists
     await this.findOne(id);
 
-    return this.prisma.songs.delete({
+    const deleted = await this.prisma.songs.delete({
       where: { id },
     });
+
+    // Remove from Elasticsearch
+    await this.searchClient.deleteSong(deleted.id);
+
+    return deleted;
   }
 
   async incrementPlayCount(id: string) {

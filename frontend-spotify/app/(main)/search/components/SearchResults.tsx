@@ -2,62 +2,185 @@
 
 import { memo } from "react";
 import { useRouter } from "next/navigation";
-import { Row, Col, Button } from "antd";
+import { Card, Image, Empty, Spin, Pagination, Typography } from "antd";
+import { SearchResult } from "@/services/search.service";
+import styles from "./SearchResults.module.css";
+
+const { Title, Paragraph } = Typography;
 
 interface SearchResultsProps {
-  results: any[];
+  results: SearchResult[];
+  loading: boolean;
+  total: number;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 }
 
-const SearchResults = memo(({ results }: SearchResultsProps) => {
-  const router = useRouter();
+const SearchResults = memo(
+  ({
+    results,
+    loading,
+    total,
+    currentPage,
+    pageSize,
+    onPageChange,
+  }: SearchResultsProps) => {
+    const router = useRouter();
 
-  return (
-    <Row gutter={[16, 16]}>
-      {results.slice(0, 20).map((item) => (
-        <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
-          <Button
-            block
-            onClick={() => {
-              if ("artists" in item) {
-                // Track - navigate to album
-                router.push(`/album/${item.album?.id}`);
-              } else if ("genres" in item && !("artists" in item)) {
-                // Artist
-                router.push(`/artist/${item.id}`);
-              } else if ("release_date" in item && !("artists" in item)) {
-                // Album
-                router.push(`/album/${item.id}`);
-              } else if ("owner" in item) {
-                // Playlist
-                router.push(`/playlist/${item.id}`);
+    if (loading) {
+      return (
+        <div style={{ textAlign: "center", padding: "50px 0" }}>
+          <Spin size="large" />
+        </div>
+      );
+    }
+
+    if (!results || results.length === 0) {
+      return (
+        <Empty
+          description="Không tìm thấy kết quả"
+          style={{ padding: "50px 0" }}
+        />
+      );
+    }
+
+    const typeLabels = {
+      song: "🎵 Bài hát",
+      artist: "🎤 Nghệ sĩ",
+      album: "💿 Album",
+      playlist: "📋 Playlist",
+    };
+
+    const typeColors = {
+      song: "#1db954",
+      artist: "#ff6b6b",
+      album: "#4c6ef5",
+      playlist: "#ff922b",
+    };
+
+    const handleCardClick = (result: SearchResult) => {
+      switch (result.type) {
+        case "song":
+          router.push(`/album/${result.id}`);
+          break;
+        case "artist":
+          router.push(`/artist/${result.id}`);
+          break;
+        case "album":
+          router.push(`/album/${result.id}`);
+          break;
+        case "playlist":
+          router.push(`/playlist/${result.id}`);
+          break;
+      }
+    };
+
+    return (
+      <div className={styles.container}>
+        <div className={styles.grid}>
+          {results.map((result) => (
+            <Card
+              key={`${result.type}-${result.id}`}
+              className={styles.card}
+              cover={
+                result.cover_url && (
+                  <div className={styles.imageWrapper}>
+                    <Image
+                      src={result.cover_url}
+                      alt={result.title || result.name}
+                      className={styles.image}
+                      preview={false}
+                    />
+                    <div className={styles.badge}>
+                      <span style={{ color: typeColors[result.type] }}>
+                        {typeLabels[result.type]}
+                      </span>
+                    </div>
+                  </div>
+                )
               }
-            }}
-            style={{
-              height: "auto",
-              backgroundColor: "#282828",
-              border: "none",
-              color: "#ffffff",
-              padding: "12px",
-              textAlign: "left",
-            }}
-          >
-            <div>
-              <p style={{ margin: "0 0 8px 0", fontWeight: "bold" }}>
-                {item.name}
-              </p>
-              <p style={{ margin: 0, color: "#b3b3b3", fontSize: "12px" }}>
-                {("artists" in item && item.artists[0]?.name) ||
-                  ("owner" in item && item.owner?.display_name) ||
-                  item.type ||
-                  "Unknown"}
-              </p>
-            </div>
-          </Button>
-        </Col>
-      ))}
-    </Row>
-  );
-});
+              hoverable
+              onClick={() => handleCardClick(result)}
+              style={{ cursor: "pointer" }}
+            >
+              <div className={styles.content}>
+                <Title
+                  level={5}
+                  style={{
+                    margin: "8px 0",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    color: "#ffffff",
+                  }}
+                >
+                  {result.title || result.name}
+                </Title>
+
+                {result.artist && (
+                  <Paragraph
+                    style={{
+                      margin: "4px 0",
+                      fontSize: "12px",
+                      color: "#b3b3b3",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {result.artist}
+                  </Paragraph>
+                )}
+
+                {result.description && (
+                  <Paragraph
+                    style={{
+                      margin: "4px 0",
+                      fontSize: "11px",
+                      color: "#9b9b9b",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {result.description}
+                  </Paragraph>
+                )}
+
+                {result.score && (
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "11px",
+                      color: "#7f7f7f",
+                    }}
+                  >
+                    Relevance: {(result.score * 10).toFixed(0)}%
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {total > pageSize && (
+          <div className={styles.pagination}>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={total}
+              onChange={onPageChange}
+              showSizeChanger={false}
+              style={{ textAlign: "center", marginTop: "30px" }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 
 SearchResults.displayName = "SearchResults";
 export default SearchResults;

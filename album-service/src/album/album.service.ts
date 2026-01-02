@@ -1,17 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
+import { SearchClient } from '../search/search.client';
 
 @Injectable()
 export class AlbumService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private searchClient: SearchClient,
+  ) {}
 
   private throwNotFoundAlbumException() {
     throw new NotFoundException({ message: 'Không tìm thấy album này' });
   }
 
   async create(artistId: string, dto: CreateAlbumDto) {
-    return this.prisma.albums.create({
+    const album = await this.prisma.albums.create({
       data: {
         title: dto.title,
         cover_url: dto.coverUrl,
@@ -20,6 +24,16 @@ export class AlbumService {
         type: dto.type,
       },
     });
+
+    // Index the album in Elasticsearch
+    await this.searchClient.indexAlbum(album.id, {
+      title: album.title,
+      coverUrl: album.cover_url,
+      releaseDate: album.release_date,
+      type: 'album',
+    });
+
+    return album;
   }
 
   async findByArtist(artistId: string, page: number = 1, limit: number = 10) {
@@ -82,7 +96,7 @@ export class AlbumService {
       this.throwNotFoundAlbumException();
     }
 
-    return this.prisma.albums.update({
+    const updatedAlbum = await this.prisma.albums.update({
       where: { id },
       data: {
         ...(dto.title && { title: dto.title }),
@@ -91,6 +105,16 @@ export class AlbumService {
         ...(dto.type && { type: dto.type }),
       },
     });
+
+    // Index the updated album in Elasticsearch
+    await this.searchClient.indexAlbum(updatedAlbum.id, {
+      title: updatedAlbum.title,
+      coverUrl: updatedAlbum.cover_url,
+      releaseDate: updatedAlbum.release_date,
+      type: 'album',
+    });
+
+    return updatedAlbum;
   }
 
   async delete(id: string) {
@@ -107,6 +131,9 @@ export class AlbumService {
     await this.prisma.albums.delete({
       where: { id },
     });
+
+    // Delete the album from Elasticsearch
+    await this.searchClient.deleteAlbum(id);
 
     return true;
   }

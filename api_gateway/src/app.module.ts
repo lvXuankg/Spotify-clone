@@ -13,6 +13,7 @@ import { AlbumModule } from './album/album.module';
 import { SongModule } from './song/song.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { StreamModule } from './stream/stream.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { StreamModule } from './stream/stream.module';
     SongModule,
     PlaylistModule,
     StreamModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -19,7 +19,7 @@ export const getConfig = (): AppConfig => ({
   rabbitmq: {
     urls: [process.env.RABBITMQ_URL || 'amqp://admin:1234@localhost:5672'],
     queue: process.env.RABBITMQ_QUEUE || 'song_queue',
-    durable: process.env.RABBITMQ_OPTION_DURABLE !== 'false', // default true
+    durable: true,
   },
   http: {
     port: parseInt(process.env.HEALTH_CHECK_PORT || '3007', 10),

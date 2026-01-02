@@ -14,10 +14,14 @@ export class PlaylistService {
   ) {}
 
   async createPlaylist(userId: string, dto: CreatePlaylistDto) {
-    const result = await sendMicroserviceRequest(this.client, 'playlist.create', {
-      userId,
-      ...dto,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.create',
+      {
+        userId,
+        ...dto,
+      },
+    );
     // Invalidate user playlists cache
     await this.redis.del(CACHE_KEYS.USER_PLAYLISTS(userId));
     await this.redis.delByPattern(CACHE_PATTERNS.ALL_PLAYLISTS);
@@ -29,11 +33,15 @@ export class PlaylistService {
     playlistId: string,
     dto: UpdatePlaylistDto,
   ) {
-    const result = await sendMicroserviceRequest(this.client, 'playlist.update', {
-      userId,
-      playlistId,
-      ...dto,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.update',
+      {
+        userId,
+        playlistId,
+        ...dto,
+      },
+    );
     await this.redis.del(CACHE_KEYS.PLAYLIST(playlistId));
     await this.redis.del(CACHE_KEYS.USER_PLAYLISTS(userId));
     await this.redis.delByPattern(CACHE_PATTERNS.ALL_PLAYLISTS);
@@ -41,10 +49,14 @@ export class PlaylistService {
   }
 
   async deletePlaylist(userId: string, playlistId: string) {
-    const result = await sendMicroserviceRequest(this.client, 'playlist.delete', {
-      userId,
-      playlistId,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.delete',
+      {
+        userId,
+        playlistId,
+      },
+    );
     await this.redis.del(CACHE_KEYS.PLAYLIST(playlistId));
     await this.redis.del(CACHE_KEYS.USER_PLAYLISTS(userId));
     await this.redis.delByPattern(CACHE_PATTERNS.ALL_PLAYLISTS);
@@ -52,11 +64,15 @@ export class PlaylistService {
   }
 
   async addSongToPlaylist(userId: string, playlistId: string, songId: string) {
-    const result = await sendMicroserviceRequest(this.client, 'playlist.add-song', {
-      userId,
-      playlistId,
-      songId,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.add-song',
+      {
+        userId,
+        playlistId,
+        songId,
+      },
+    );
     await this.redis.del(CACHE_KEYS.PLAYLIST(playlistId));
     return result;
   }
@@ -66,11 +82,15 @@ export class PlaylistService {
     playlistId: string,
     songId: string,
   ) {
-    const result = await sendMicroserviceRequest(this.client, 'playlist.remove-song', {
-      userId,
-      playlistId,
-      songId,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.remove-song',
+      {
+        userId,
+        playlistId,
+        songId,
+      },
+    );
     await this.redis.del(CACHE_KEYS.PLAYLIST(playlistId));
     return result;
   }
@@ -81,10 +101,14 @@ export class PlaylistService {
     const cached = await this.redis.get(cacheKey);
     if (cached) return cached;
 
-    const result = await sendMicroserviceRequest(this.client, 'playlist.get-detail', {
-      userId,
-      playlistId,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.get-detail',
+      {
+        userId,
+        playlistId,
+      },
+    );
     await this.redis.set(cacheKey, result, CACHE_TTL.MEDIUM);
     return result;
   }
@@ -95,9 +119,13 @@ export class PlaylistService {
     const cached = await this.redis.get(cacheKey);
     if (cached) return cached;
 
-    const result = await sendMicroserviceRequest(this.client, 'playlist.get-my-playlist', {
-      userId,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.get-my-playlist',
+      {
+        userId,
+      },
+    );
     await this.redis.set(cacheKey, result, CACHE_TTL.USER_PLAYLISTS);
     return result;
   }
@@ -113,12 +141,16 @@ export class PlaylistService {
     const cached = await this.redis.get(cacheKey);
     if (cached) return cached;
 
-    const result = await sendMicroserviceRequest(this.client, 'playlist.get-public', {
-      page,
-      limit,
-      sortBy,
-      order,
-    });
+    const result = await sendMicroserviceRequest(
+      this.client,
+      'playlist.get-public',
+      {
+        page,
+        limit,
+        sortBy,
+        order,
+      },
+    );
     await this.redis.set(cacheKey, result, CACHE_TTL.LIST);
     return result;
   }

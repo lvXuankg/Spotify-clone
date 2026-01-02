@@ -8,7 +8,6 @@ import {
   TeamOutlined,
   PlayCircleOutlined,
   CustomerServiceOutlined,
-  FlagOutlined,
   LogoutOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
@@ -60,11 +59,6 @@ const AdminLayout: FC<AdminLayoutProps> = ({ children }) => {
       key: "/admin/songs",
       icon: <CustomerServiceOutlined />,
       label: <Link href="/admin/songs">Songs</Link>,
-    },
-    {
-      key: "/admin/reports",
-      icon: <FlagOutlined />,
-      label: <Link href="/admin/reports">Reports</Link>,
     },
   ];
 

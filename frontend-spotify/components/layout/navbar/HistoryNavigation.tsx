@@ -6,23 +6,35 @@ import ForwardBackwardsButton from "./ForwardBackwardsButton";
 import { useTranslation } from "react-i18next";
 import { memo } from "react";
 import { FaSpotify } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { GoHome, GoHomeFill } from "react-icons/go";
 
 const HistoryNavigation = memo(() => {
   const { t } = useTranslation(["navbar"]);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isHome = pathname === "/" || pathname === "/home";
 
   return (
-    <Space>
-      <NavigationButton
-        text={t("Home")}
-        onClick={() => {
-          router.push("/");
+    <Space size={8}>
+      {/* Spotify Logo */}
+      <div
+        onClick={() => router.push("/")}
+        style={{
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          padding: "8px",
+          borderRadius: "50%",
+          backgroundColor: "#000",
         }}
-        icon={<FaSpotify size={25} fill="white" />}
-      />
+      >
+        <FaSpotify size={28} fill="#1DB954" />
+      </div>
 
-      <div className="flex flex-row items-center gap-2 h-full">
+      {/* Navigation Arrows */}
+      <div className="flex flex-row items-center gap-1 h-full">
         <ForwardBackwardsButton flip />
         <ForwardBackwardsButton flip={false} />
       </div>

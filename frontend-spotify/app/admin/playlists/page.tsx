@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   Table,
@@ -10,93 +10,94 @@ import {
   Tag,
   Dropdown,
   Modal,
-  Space,
   message,
 } from "antd";
 import {
   UnorderedListOutlined,
   SearchOutlined,
-  PlusOutlined,
   MoreOutlined,
-  EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  LockOutlined,
+  ReloadOutlined,
   GlobalOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { adminService, AdminPlaylist } from "@/services/admin";
+import { useDebounce } from "use-debounce";
+import { useRouter } from "next/navigation";
 import styles from "../components/Dashboard.module.css";
 
-interface Playlist {
-  id: string;
-  name: string;
-  owner: string;
-  cover: string | null;
-  songCount: number;
-  followers: number;
-  isPublic: boolean;
-  createdAt: string;
-}
-
-// Mock data
-const mockPlaylists: Playlist[] = [
-  {
-    id: "1",
-    name: "Top Hits Vietnam 2024",
-    owner: "Spotify",
-    cover: null,
-    songCount: 50,
-    followers: 125000,
-    isPublic: true,
-    createdAt: "2024-01-01",
-  },
-  {
-    id: "2",
-    name: "Chill Vibes",
-    owner: "Nguyễn Văn A",
-    cover: null,
-    songCount: 32,
-    followers: 8500,
-    isPublic: true,
-    createdAt: "2024-02-15",
-  },
-  {
-    id: "3",
-    name: "Workout Mix",
-    owner: "Trần Thị B",
-    cover: null,
-    songCount: 45,
-    followers: 3200,
-    isPublic: true,
-    createdAt: "2024-03-10",
-  },
-  {
-    id: "4",
-    name: "Study Music",
-    owner: "Lê Văn C",
-    cover: null,
-    songCount: 28,
-    followers: 15000,
-    isPublic: false,
-    createdAt: "2024-03-20",
-  },
-  {
-    id: "5",
-    name: "Road Trip",
-    owner: "Phạm Thị D",
-    cover: null,
-    songCount: 67,
-    followers: 920,
-    isPublic: true,
-    createdAt: "2024-04-01",
-  },
-];
-
 export default function PlaylistsPage() {
-  const [playlists] = useState<Playlist[]>(mockPlaylists);
+  const router = useRouter();
+  const [playlists, setPlaylists] = useState<AdminPlaylist[]>([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearch] = useDebounce(searchText, 500);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  const columns: ColumnsType<Playlist> = [
+  const fetchPlaylists = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await adminService.getAllPlaylists(
+        pagination.current,
+        pagination.pageSize,
+        debouncedSearch || undefined
+      );
+      setPlaylists(response.data.data);
+      setPagination((prev) => ({
+        ...prev,
+        total: response.data.pagination.total,
+      }));
+    } catch (error: any) {
+      console.error("Failed to fetch playlists:", error);
+      message.error("Failed to load playlists");
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.current, pagination.pageSize, debouncedSearch]);
+
+  useEffect(() => {
+    fetchPlaylists();
+  }, [fetchPlaylists]);
+
+  const handleDeletePlaylist = async (playlist: AdminPlaylist) => {
+    Modal.confirm({
+      title: "Delete Playlist",
+      content: `Are you sure you want to delete "${playlist.title}"? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          await adminService.deletePlaylist(playlist.id);
+          message.success("Playlist deleted successfully");
+          fetchPlaylists();
+        } catch (error) {
+          message.error("Failed to delete playlist");
+        }
+      },
+    });
+  };
+
+  const handleViewPlaylist = (playlist: AdminPlaylist) => {
+    router.push(`/playlist/${playlist.id}`);
+  };
+
+  const columns: ColumnsType<AdminPlaylist> = [
+    {
+      title: "#",
+      key: "index",
+      width: 50,
+      render: (_, __, index) => (
+        <span style={{ color: "#b3b3b3" }}>
+          {(pagination.current - 1) * pagination.pageSize + index + 1}
+        </span>
+      ),
+    },
     {
       title: "Playlist",
       key: "playlist",
@@ -105,54 +106,59 @@ export default function PlaylistsPage() {
           <Avatar
             shape="square"
             size={48}
-            src={record.cover}
+            src={record.cover_url}
             icon={<UnorderedListOutlined />}
-            style={{ backgroundColor: "#282828", borderRadius: 4 }}
+            style={{ backgroundColor: "#282828" }}
           />
           <div>
-            <div style={{ fontWeight: 500 }}>{record.name}</div>
+            <div style={{ fontWeight: 500, color: "#fff" }}>{record.title}</div>
             <div style={{ color: "#b3b3b3", fontSize: 12 }}>
-              by {record.owner}
+              {record.description || "No description"}
             </div>
           </div>
         </div>
       ),
     },
     {
-      title: "Songs",
-      dataIndex: "songCount",
-      key: "songCount",
-      sorter: (a, b) => a.songCount - b.songCount,
+      title: "Owner",
+      key: "owner",
+      width: 180,
+      render: (_, record) => (
+        <span style={{ color: "#b3b3b3" }}>
+          {record.owner?.name || "Unknown"}
+        </span>
+      ),
     },
     {
-      title: "Followers",
-      dataIndex: "followers",
-      key: "followers",
-      sorter: (a, b) => a.followers - b.followers,
-      render: (followers) => followers.toLocaleString(),
+      title: "Songs",
+      dataIndex: "song_count",
+      key: "song_count",
+      width: 80,
+      render: (count: number) => <Tag color="blue">{count} songs</Tag>,
     },
     {
       title: "Visibility",
-      dataIndex: "isPublic",
-      key: "isPublic",
-      render: (isPublic) => (
+      key: "visibility",
+      width: 100,
+      render: (_, record) => (
         <Tag
-          icon={isPublic ? <GlobalOutlined /> : <LockOutlined />}
-          color={isPublic ? "green" : "default"}
+          color={record.is_public ? "green" : "default"}
+          icon={record.is_public ? <GlobalOutlined /> : <LockOutlined />}
         >
-          {isPublic ? "Public" : "Private"}
+          {record.is_public ? "Public" : "Private"}
         </Tag>
       ),
-      filters: [
-        { text: "Public", value: true },
-        { text: "Private", value: false },
-      ],
     },
     {
       title: "Created",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => new Date(date).toLocaleDateString("vi-VN"),
+      dataIndex: "created_at",
+      key: "created_at",
+      width: 120,
+      render: (date: string) => (
+        <span style={{ color: "#b3b3b3" }}>
+          {new Date(date).toLocaleDateString()}
+        </span>
+      ),
     },
     {
       title: "Actions",
@@ -162,65 +168,29 @@ export default function PlaylistsPage() {
         <Dropdown
           menu={{
             items: [
-              { key: "view", icon: <EyeOutlined />, label: "View Details" },
-              { key: "edit", icon: <EditOutlined />, label: "Edit" },
               {
-                key: "visibility",
-                icon: record.isPublic ? <LockOutlined /> : <GlobalOutlined />,
-                label: record.isPublic ? "Make Private" : "Make Public",
+                key: "view",
+                label: "View",
+                icon: <EyeOutlined />,
+                onClick: () => handleViewPlaylist(record),
               },
               { type: "divider" },
               {
                 key: "delete",
-                icon: <DeleteOutlined />,
                 label: "Delete",
+                icon: <DeleteOutlined />,
                 danger: true,
+                onClick: () => handleDeletePlaylist(record),
               },
             ],
-            onClick: ({ key }) => handleAction(key, record),
           }}
           trigger={["click"]}
         >
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            style={{ color: "#b3b3b3" }}
-          />
+          <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
       ),
     },
   ];
-
-  const handleAction = (action: string, playlist: Playlist) => {
-    switch (action) {
-      case "view":
-        message.info(`Viewing: ${playlist.name}`);
-        break;
-      case "edit":
-        message.info(`Editing: ${playlist.name}`);
-        break;
-      case "visibility":
-        message.success(
-          `${playlist.name} is now ${playlist.isPublic ? "private" : "public"}`
-        );
-        break;
-      case "delete":
-        Modal.confirm({
-          title: "Delete Playlist",
-          content: `Are you sure you want to delete "${playlist.name}"?`,
-          okText: "Delete",
-          okType: "danger",
-          onOk: () => message.success(`Deleted: ${playlist.name}`),
-        });
-        break;
-    }
-  };
-
-  const filteredPlaylists = playlists.filter(
-    (playlist) =>
-      playlist.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      playlist.owner.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
     <div className={styles.container}>
@@ -229,37 +199,30 @@ export default function PlaylistsPage() {
         <div>
           <h1 className={styles.title}>Playlists Management</h1>
           <p className={styles.subtitle}>
-            Manage all playlists on your platform
+            Manage all public playlists on the platform
           </p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{
-            background: "#1db954",
-            borderColor: "#1db954",
-            borderRadius: 20,
-          }}
-        >
-          Create Playlist
-        </Button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={fetchPlaylists}
+            style={{ borderRadius: 20 }}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <Card className={styles.contentCard} style={{ marginBottom: 20 }}>
-        <div style={{ padding: 16 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <Input
-            placeholder="Search playlists by name or owner..."
+            placeholder="Search playlists..."
             prefix={<SearchOutlined style={{ color: "#b3b3b3" }} />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              color: "#fff",
-              borderRadius: 8,
-              maxWidth: 400,
-            }}
+            style={{ maxWidth: 400 }}
+            allowClear
           />
         </div>
       </Card>
@@ -267,15 +230,25 @@ export default function PlaylistsPage() {
       {/* Table */}
       <Card className={styles.contentCard}>
         <Table
-          dataSource={filteredPlaylists}
           columns={columns}
+          dataSource={playlists}
           rowKey="id"
-          className={styles.table}
+          loading={loading}
           pagination={{
-            pageSize: 10,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} playlists`,
+            onChange: (page, pageSize) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: page,
+                pageSize: pageSize || 10,
+              }));
+            },
           }}
+          className={styles.table}
         />
       </Card>
     </div>

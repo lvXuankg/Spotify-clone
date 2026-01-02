@@ -111,21 +111,25 @@ const SearchResults = memo(
               key={`${result.type}-${result.id}`}
               className={styles.card}
               cover={
-                result.cover_url && (
-                  <div className={styles.imageWrapper}>
+                <div className={styles.imageWrapper}>
+                  {result.cover_url ? (
                     <Image
                       src={result.cover_url}
-                      alt={result.title || result.name}
+                      alt={result.title || result.name || ""}
                       className={styles.image}
                       preview={false}
                     />
-                    <div className={styles.badge}>
-                      <span style={{ color: typeColors[result.type] }}>
-                        {typeLabels[result.type]}
-                      </span>
+                  ) : (
+                    <div className={styles.placeholder}>
+                      <span>{result.type === "artist" ? "🎤" : "🎵"}</span>
                     </div>
+                  )}
+                  <div className={styles.badge}>
+                    <span style={{ color: typeColors[result.type] }}>
+                      {typeLabels[result.type]}
+                    </span>
                   </div>
-                )
+                </div>
               }
               hoverable
               onClick={() => handleCardClick(result)}

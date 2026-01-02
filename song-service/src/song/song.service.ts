@@ -74,6 +74,54 @@ export class SongService {
     });
   }
 
+  /**
+   * Get all songs with pagination (Admin)
+   */
+  async getAllSongs(page = 1, limit = 10, search?: string) {
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          OR: [{ title: { contains: search, mode: 'insensitive' as const } }],
+        }
+      : {};
+
+    const [songs, total] = await Promise.all([
+      this.prisma.songs.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+        include: {
+          albums: {
+            select: {
+              id: true,
+              title: true,
+              cover_url: true,
+              artists: {
+                select: {
+                  id: true,
+                  display_name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.songs.count({ where }),
+    ]);
+
+    return {
+      data: songs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async findOne(id: string) {
     const song = await this.prisma.songs.findUnique({
       where: { id },

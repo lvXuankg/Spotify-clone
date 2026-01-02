@@ -19,6 +19,17 @@ export class SongController {
     return this.songService.findAll(payload.albumId);
   }
 
+  @MessagePattern('song.getAllSongs')
+  async getAllSongs(
+    @Payload() payload: { page?: number; limit?: number; search?: string },
+  ) {
+    return this.songService.getAllSongs(
+      payload.page,
+      payload.limit,
+      payload.search,
+    );
+  }
+
   @MessagePattern('song.findOne')
   async findOne(@Payload() payload: { id: string }) {
     return this.songService.findOne(payload.id);

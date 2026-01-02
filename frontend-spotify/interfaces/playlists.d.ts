@@ -30,7 +30,7 @@ export interface PlaylistSong {
   duration: number;
   audio_url: string;
   position: number;
-  artists: Artist[];
+  artist: Artist | null;
 }
 
 export interface PlaylistDetail {

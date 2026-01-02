@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import {
   homeActions,
@@ -17,10 +17,45 @@ import PageHeader from "@/components/layout/PageHeader";
 import { MediaSection } from "./components/MediaSection";
 import styles from "./page.module.css";
 
+// Get greeting based on time of day
+const getGreeting = (): { text: string; emoji: string } => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return { text: "Good morning", emoji: "☀️" };
+  } else if (hour >= 12 && hour < 18) {
+    return { text: "Good afternoon", emoji: "🌤️" };
+  } else if (hour >= 18 && hour < 22) {
+    return { text: "Good evening", emoji: "🌆" };
+  } else {
+    return { text: "Good night", emoji: "🌙" };
+  }
+};
+
+// Get gradient color based on time of day
+const getHeaderColor = (): string => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return "#FF8C42"; // Warm orange for morning
+  } else if (hour >= 12 && hour < 18) {
+    return "#1DB954"; // Spotify green for afternoon
+  } else if (hour >= 18 && hour < 22) {
+    return "#7B2D8E"; // Purple for evening
+  } else {
+    return "#1a1a2e"; // Dark blue for night
+  }
+};
+
 const Home = memo(() => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Get user name from auth state
+  const userName = useAppSelector((state) => state.auth.user?.name);
+
+  // Memoize greeting and color
+  const greeting = useMemo(() => getGreeting(), []);
+  const headerColor = useMemo(() => getHeaderColor(), []);
 
   // Selectors
   const latestAlbums = useAppSelector(selectLatestAlbums);
@@ -48,11 +83,20 @@ const Home = memo(() => {
   return (
     <div ref={containerRef} className={styles.container}>
       <PageHeader
-        color="#121212"
+        color={headerColor}
         container={containerRef}
         sectionContainer={sectionRef}
       >
-        <h1 className={styles.welcomeTitle}>Welcome back! 🎵</h1>
+        <div className={styles.headerContent}>
+          <span className={styles.greeting}>
+            <span className={styles.greetingEmoji}>{greeting.emoji}</span>
+            <span className={styles.greetingText}>{greeting.text}</span>
+            {userName && <span className={styles.userName}>, {userName}</span>}
+          </span>
+          <p className={styles.subtitle}>
+            What would you like to listen to today?
+          </p>
+        </div>
       </PageHeader>
 
       <div ref={sectionRef} className={styles.content}>

@@ -169,8 +169,19 @@ export class PlaylistService {
       include: {
         songs: {
           include: {
-            song_artists: {
-              include: { artists: true },
+            albums: {
+              select: {
+                id: true,
+                title: true,
+                cover_url: true,
+                artists: {
+                  select: {
+                    id: true,
+                    display_name: true,
+                    avatar_url: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -194,13 +205,13 @@ export class PlaylistService {
           duration: ps.songs!.duration_seconds,
           audio_url: ps.songs!.audio_url,
           position: ps.position,
-          artists: ps
-            .songs!.song_artists.filter((sa) => sa.artists !== null)
-            .map((sa) => ({
-              id: sa.artists!.id,
-              display_name: sa.artists!.display_name,
-              avatar_url: sa.artists!.avatar_url,
-            })),
+          artist: ps.songs!.albums?.artists
+            ? {
+                id: ps.songs!.albums.artists.id,
+                display_name: ps.songs!.albums.artists.display_name,
+                avatar_url: ps.songs!.albums.artists.avatar_url,
+              }
+            : null,
         })),
     };
   }

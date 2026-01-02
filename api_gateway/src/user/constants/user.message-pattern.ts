@@ -8,6 +8,11 @@ export const USER_MESSAGE_PATTERNS = {
   GET_PROFILE: 'user.get_profile',
   UPDATE_PROFILE: 'user.update_profile',
 
+  // Admin Management
+  GET_ALL_USERS: 'user.get_all_users',
+  DELETE_USER: 'user.delete_user',
+  UPDATE_USER_ROLE: 'user.update_user_role',
+
   // User Search & Typing
   TYPING_FIND_USERS: 'user.typing_find_users',
   FIND_USERS: 'user.find_users',

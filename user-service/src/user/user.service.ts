@@ -13,6 +13,92 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Get all users with pagination (Admin only)
+   */
+  async getAllUsers(page = 1, limit = 10, search?: string) {
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } },
+            { username: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const [users, total] = await Promise.all([
+      this.prisma.users.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          username: true,
+          avatar_url: true,
+          role: true,
+          created_at: true,
+          updated_at: true,
+        },
+      }),
+      this.prisma.users.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Delete user (Admin only)
+   */
+  async deleteUser(userId: string) {
+    const user = await this.prisma.users.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(errorHandling.userNotFound.message);
+    }
+
+    await this.prisma.users.delete({ where: { id: userId } });
+
+    return { success: true, message: 'User deleted successfully' };
+  }
+
+  /**
+   * Update user role (Admin only)
+   */
+  async updateUserRole(userId: string, role: string) {
+    const user = await this.prisma.users.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(errorHandling.userNotFound.message);
+    }
+
+    const updated = await this.prisma.users.update({
+      where: { id: userId },
+      data: { role },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      },
+    });
+
+    return updated;
+  }
+
   async getProfile(userId: string) {
     const user = await this.prisma.users.findFirst({
       where: {

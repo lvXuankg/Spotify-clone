@@ -21,6 +21,23 @@ import { UpdateSongDto } from './dto/update-song.dto';
 export class SongController {
   constructor(private readonly songService: SongService) {}
 
+  /**
+   * Get all songs (Admin)
+   */
+  @Get('all')
+  @UseGuards(JwtAuthGuard)
+  async getAllSongs(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.songService.getAllSongs(
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+      search,
+    );
+  }
+
   @Post(':albumId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)

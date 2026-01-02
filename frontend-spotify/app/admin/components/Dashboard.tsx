@@ -1,136 +1,75 @@
 "use client";
 
-import {
-  Row,
-  Col,
-  Card,
-  Statistic,
-  Button,
-  Table,
-  Tag,
-  Avatar,
-  Progress,
-} from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { Row, Col, Card, Statistic, Button, Table, Avatar, Spin } from "antd";
 import {
   UserOutlined,
   TeamOutlined,
   CustomerServiceOutlined,
-  FlagOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
+  UnorderedListOutlined,
   PlayCircleOutlined,
   RiseOutlined,
   ClockCircleOutlined,
+  LoadingOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
+import { adminService, AdminSong, AdminUser } from "@/services/admin";
 import styles from "./Dashboard.module.css";
 
-// Mock data for recent activities
-const recentActivities = [
-  {
-    id: 1,
-    user: "Nguyen Van A",
-    action: "Uploaded new song",
-    time: "2 minutes ago",
-    type: "upload",
-  },
-  {
-    id: 2,
-    user: "Tran Thi B",
-    action: "Created playlist",
-    time: "15 minutes ago",
-    type: "playlist",
-  },
-  {
-    id: 3,
-    user: "Le Van C",
-    action: "Registered account",
-    time: "1 hour ago",
-    type: "register",
-  },
-  {
-    id: 4,
-    user: "Pham Thi D",
-    action: "Reported content",
-    time: "2 hours ago",
-    type: "report",
-  },
-  {
-    id: 5,
-    user: "Hoang Van E",
-    action: "Updated profile",
-    time: "3 hours ago",
-    type: "update",
-  },
-];
+interface DashboardStats {
+  totalUsers: number;
+  totalArtists: number;
+  totalSongs: number;
+  totalPlaylists: number;
+  recentUsers: AdminUser[];
+  topSongs: AdminSong[];
+}
 
-// Mock data for top songs
-const topSongs = [
-  {
-    id: 1,
-    title: "Hoa Nở Không Màu",
-    artist: "Hoài Lâm",
-    plays: 125000,
-    trend: "up",
-  },
-  {
-    id: 2,
-    title: "Có Chắc Yêu Là Đây",
-    artist: "Sơn Tùng MTP",
-    plays: 98000,
-    trend: "up",
-  },
-  {
-    id: 3,
-    title: "Waiting For You",
-    artist: "MONO",
-    plays: 87500,
-    trend: "down",
-  },
-  {
-    id: 4,
-    title: "Em Của Ngày Hôm Qua",
-    artist: "Sơn Tùng MTP",
-    plays: 76000,
-    trend: "up",
-  },
-  {
-    id: 5,
-    title: "See Tình",
-    artist: "Hoàng Thùy Linh",
-    plays: 65000,
-    trend: "down",
-  },
-];
-
-const activityColumns = [
+const userColumns = [
   {
     title: "User",
-    dataIndex: "user",
-    key: "user",
-    render: (text: string) => (
+    dataIndex: "name",
+    key: "name",
+    render: (text: string, record: AdminUser) => (
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Avatar
           size="small"
+          src={record.avatar_url}
           icon={<UserOutlined />}
           style={{ backgroundColor: "#1db954" }}
         />
-        <span>{text}</span>
+        <span>{text || record.email}</span>
       </div>
     ),
   },
   {
-    title: "Action",
-    dataIndex: "action",
-    key: "action",
+    title: "Role",
+    dataIndex: "role",
+    key: "role",
+    render: (role: string) => (
+      <span
+        style={{
+          color:
+            role === "ADMIN"
+              ? "#f59e0b"
+              : role === "ARTIST"
+              ? "#7c3aed"
+              : "#1db954",
+          fontWeight: 500,
+        }}
+      >
+        {role}
+      </span>
+    ),
   },
   {
-    title: "Time",
-    dataIndex: "time",
-    key: "time",
+    title: "Joined",
+    dataIndex: "created_at",
+    key: "created_at",
     render: (text: string) => (
       <span style={{ color: "#b3b3b3", fontSize: 12 }}>
         <ClockCircleOutlined style={{ marginRight: 4 }} />
-        {text}
+        {new Date(text).toLocaleDateString()}
       </span>
     ),
   },
@@ -139,40 +78,106 @@ const activityColumns = [
 const songColumns = [
   {
     title: "#",
-    dataIndex: "id",
-    key: "id",
+    key: "index",
     width: 50,
-    render: (id: number) => <span style={{ color: "#b3b3b3" }}>{id}</span>,
+    render: (_: unknown, __: unknown, index: number) => (
+      <span style={{ color: "#b3b3b3" }}>{index + 1}</span>
+    ),
   },
   {
     title: "Title",
     dataIndex: "title",
     key: "title",
-    render: (text: string, record: (typeof topSongs)[0]) => (
+    render: (text: string, record: AdminSong) => (
       <div>
         <div style={{ fontWeight: 500 }}>{text}</div>
-        <div style={{ color: "#b3b3b3", fontSize: 12 }}>{record.artist}</div>
+        <div style={{ color: "#b3b3b3", fontSize: 12 }}>
+          {record.albums?.artists?.display_name || "Unknown Artist"}
+        </div>
       </div>
     ),
   },
   {
     title: "Plays",
-    dataIndex: "plays",
-    key: "plays",
-    render: (plays: number, record: (typeof topSongs)[0]) => (
+    dataIndex: "play_count",
+    key: "play_count",
+    render: (plays: number) => (
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span>{plays.toLocaleString()}</span>
-        {record.trend === "up" ? (
-          <ArrowUpOutlined style={{ color: "#1db954", fontSize: 12 }} />
-        ) : (
-          <ArrowDownOutlined style={{ color: "#ff4d4f", fontSize: 12 }} />
-        )}
+        <span>{(plays || 0).toLocaleString()}</span>
       </div>
     ),
   },
 ];
 
 export function Dashboard() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalArtists: 0,
+    totalSongs: 0,
+    totalPlaylists: 0,
+    recentUsers: [],
+    topSongs: [],
+  });
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch all stats in parallel
+      const [usersRes, artistsRes, songsRes, playlistsRes] = await Promise.all([
+        adminService.getAllUsers(1, 5),
+        adminService.getAllArtists(1, 5),
+        adminService.getAllSongs(1, 5),
+        adminService.getAllPlaylists(1, 5),
+      ]);
+
+      setStats({
+        totalUsers:
+          usersRes.data.pagination?.total || usersRes.data.data?.length || 0,
+        totalArtists:
+          artistsRes.data.pagination?.total ||
+          artistsRes.data.data?.length ||
+          0,
+        totalSongs:
+          songsRes.data.pagination?.total || songsRes.data.data?.length || 0,
+        totalPlaylists:
+          playlistsRes.data.pagination?.total ||
+          playlistsRes.data.data?.length ||
+          0,
+        recentUsers: usersRes.data.data || [],
+        topSongs: songsRes.data.data || [],
+      });
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  if (loading) {
+    return (
+      <div
+        className={styles.container}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: 400,
+        }}
+      >
+        <Spin
+          indicator={
+            <LoadingOutlined style={{ fontSize: 48, color: "#1db954" }} spin />
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -186,14 +191,15 @@ export function Dashboard() {
         <div className={styles.headerActions}>
           <Button
             type="primary"
-            icon={<RiseOutlined />}
+            icon={<ReloadOutlined />}
+            onClick={fetchStats}
             style={{
               background: "#1db954",
               borderColor: "#1db954",
               borderRadius: 20,
             }}
           >
-            View Analytics
+            Refresh
           </Button>
         </div>
       </div>
@@ -209,19 +215,11 @@ export function Dashboard() {
           >
             <Statistic
               title={<span className={styles.statTitle}>Total Users</span>}
-              value={12847}
+              value={stats.totalUsers}
               prefix={<UserOutlined className={styles.statIcon} />}
               styles={{
                 content: { color: "#fff", fontSize: 32, fontWeight: 700 },
               }}
-              suffix={
-                <Tag
-                  color="rgba(255,255,255,0.2)"
-                  style={{ marginLeft: 8, color: "#fff", border: "none" }}
-                >
-                  <ArrowUpOutlined /> 12%
-                </Tag>
-              }
             />
           </Card>
         </Col>
@@ -235,19 +233,11 @@ export function Dashboard() {
           >
             <Statistic
               title={<span className={styles.statTitle}>Artists</span>}
-              value={1256}
+              value={stats.totalArtists}
               prefix={<TeamOutlined className={styles.statIcon} />}
               styles={{
                 content: { color: "#fff", fontSize: 32, fontWeight: 700 },
               }}
-              suffix={
-                <Tag
-                  color="rgba(255,255,255,0.2)"
-                  style={{ marginLeft: 8, color: "#fff", border: "none" }}
-                >
-                  <ArrowUpOutlined /> 8%
-                </Tag>
-              }
             />
           </Card>
         </Col>
@@ -261,19 +251,11 @@ export function Dashboard() {
           >
             <Statistic
               title={<span className={styles.statTitle}>Songs</span>}
-              value={56789}
+              value={stats.totalSongs}
               prefix={<CustomerServiceOutlined className={styles.statIcon} />}
               styles={{
                 content: { color: "#fff", fontSize: 32, fontWeight: 700 },
               }}
-              suffix={
-                <Tag
-                  color="rgba(255,255,255,0.2)"
-                  style={{ marginLeft: 8, color: "#fff", border: "none" }}
-                >
-                  <ArrowUpOutlined /> 24%
-                </Tag>
-              }
             />
           </Card>
         </Col>
@@ -282,24 +264,16 @@ export function Dashboard() {
           <Card
             className={styles.statCard}
             style={{
-              background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
             }}
           >
             <Statistic
-              title={<span className={styles.statTitle}>Pending Reports</span>}
-              value={42}
-              prefix={<FlagOutlined className={styles.statIcon} />}
+              title={<span className={styles.statTitle}>Playlists</span>}
+              value={stats.totalPlaylists}
+              prefix={<UnorderedListOutlined className={styles.statIcon} />}
               styles={{
                 content: { color: "#fff", fontSize: 32, fontWeight: 700 },
               }}
-              suffix={
-                <Tag
-                  color="rgba(255,255,255,0.2)"
-                  style={{ marginLeft: 8, color: "#fff", border: "none" }}
-                >
-                  <ArrowDownOutlined /> 5%
-                </Tag>
-              }
             />
           </Card>
         </Col>
@@ -313,22 +287,27 @@ export function Dashboard() {
             title={
               <div className={styles.cardHeader}>
                 <ClockCircleOutlined />
-                <span>Recent Activity</span>
+                <span>Recent Users</span>
               </div>
             }
             extra={
-              <Button type="link" style={{ color: "#1db954" }}>
+              <Button
+                type="link"
+                href="/admin/users"
+                style={{ color: "#1db954" }}
+              >
                 View All
               </Button>
             }
           >
             <Table
-              dataSource={recentActivities}
-              columns={activityColumns}
+              dataSource={stats.recentUsers}
+              columns={userColumns}
               pagination={false}
               rowKey="id"
               size="small"
               className={styles.table}
+              locale={{ emptyText: "No users found" }}
             />
           </Card>
         </Col>
@@ -339,80 +318,134 @@ export function Dashboard() {
             title={
               <div className={styles.cardHeader}>
                 <PlayCircleOutlined />
-                <span>Top Songs This Week</span>
+                <span>Recent Songs</span>
               </div>
             }
             extra={
-              <Button type="link" style={{ color: "#1db954" }}>
+              <Button
+                type="link"
+                href="/admin/songs"
+                style={{ color: "#1db954" }}
+              >
                 View All
               </Button>
             }
           >
             <Table
-              dataSource={topSongs}
+              dataSource={stats.topSongs}
               columns={songColumns}
               pagination={false}
               rowKey="id"
               size="small"
               className={styles.table}
+              locale={{ emptyText: "No songs found" }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Platform Stats */}
+      {/* Quick Stats */}
       <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
         <Col xs={24} lg={8}>
           <Card className={styles.contentCard}>
             <div className={styles.progressCard}>
-              <h4>Storage Usage</h4>
-              <Progress
-                percent={68}
-                strokeColor="#1db954"
-                railColor="rgba(255,255,255,0.1)"
-                format={(percent) => (
-                  <span style={{ color: "#fff" }}>{percent}%</span>
-                )}
-              />
-              <p style={{ color: "#b3b3b3", fontSize: 12, marginTop: 8 }}>
-                68 GB of 100 GB used
-              </p>
+              <h4>Total Content</h4>
+              <div style={{ marginTop: 16 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Songs</span>
+                  <span style={{ color: "#1db954", fontWeight: 600 }}>
+                    {stats.totalSongs}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Artists</span>
+                  <span style={{ color: "#7c3aed", fontWeight: 600 }}>
+                    {stats.totalArtists}
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Playlists</span>
+                  <span style={{ color: "#3b82f6", fontWeight: 600 }}>
+                    {stats.totalPlaylists}
+                  </span>
+                </div>
+              </div>
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={8}>
           <Card className={styles.contentCard}>
             <div className={styles.progressCard}>
-              <h4>Active Sessions</h4>
-              <Progress
-                percent={45}
-                strokeColor="#7c3aed"
-                railColor="rgba(255,255,255,0.1)"
-                format={(percent) => (
-                  <span style={{ color: "#fff" }}>{percent}%</span>
-                )}
-              />
-              <p style={{ color: "#b3b3b3", fontSize: 12, marginTop: 8 }}>
-                4,521 users online now
-              </p>
+              <h4>User Statistics</h4>
+              <div style={{ marginTop: 16 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Total Users</span>
+                  <span style={{ color: "#1db954", fontWeight: 600 }}>
+                    {stats.totalUsers}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Recent Users</span>
+                  <span style={{ color: "#f59e0b", fontWeight: 600 }}>
+                    {stats.recentUsers.length}
+                  </span>
+                </div>
+              </div>
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={8}>
           <Card className={styles.contentCard}>
             <div className={styles.progressCard}>
-              <h4>Server Health</h4>
-              <Progress
-                percent={92}
-                strokeColor="#22c55e"
-                railColor="rgba(255,255,255,0.1)"
-                format={(percent) => (
-                  <span style={{ color: "#fff" }}>{percent}%</span>
-                )}
-              />
-              <p style={{ color: "#b3b3b3", fontSize: 12, marginTop: 8 }}>
-                All systems operational
-              </p>
+              <h4>Platform Status</h4>
+              <div style={{ marginTop: 16 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>API Status</span>
+                  <span style={{ color: "#22c55e", fontWeight: 600 }}>
+                    ● Online
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span style={{ color: "#b3b3b3" }}>Services</span>
+                  <span style={{ color: "#22c55e", fontWeight: 600 }}>
+                    ● Running
+                  </span>
+                </div>
+              </div>
             </div>
           </Card>
         </Col>

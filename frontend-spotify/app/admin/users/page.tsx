@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   Table,
@@ -8,120 +8,113 @@ import {
   Input,
   Avatar,
   Tag,
-  Space,
   Dropdown,
   Modal,
-  Form,
-  Select,
   message,
+  Select,
 } from "antd";
 import {
   UserOutlined,
   SearchOutlined,
-  PlusOutlined,
   MoreOutlined,
-  EditOutlined,
   DeleteOutlined,
-  LockOutlined,
-  MailOutlined,
+  EditOutlined,
+  ReloadOutlined,
+  CrownOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { adminService, AdminUser } from "@/services/admin";
+import { useDebounce } from "use-debounce";
 import styles from "../components/Dashboard.module.css";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string | null;
-  role: "USER" | "ADMIN" | "ARTIST";
-  status: "ACTIVE" | "BANNED" | "PENDING";
-  createdAt: string;
-  playlists: number;
-}
-
-// Mock data
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "Nguyễn Văn A",
-    email: "nguyena@email.com",
-    avatar: null,
-    role: "USER",
-    status: "ACTIVE",
-    createdAt: "2024-01-15",
-    playlists: 12,
-  },
-  {
-    id: "2",
-    name: "Trần Thị B",
-    email: "tranb@email.com",
-    avatar: null,
-    role: "ARTIST",
-    status: "ACTIVE",
-    createdAt: "2024-02-20",
-    playlists: 8,
-  },
-  {
-    id: "3",
-    name: "Lê Văn C",
-    email: "lec@email.com",
-    avatar: null,
-    role: "USER",
-    status: "BANNED",
-    createdAt: "2024-03-10",
-    playlists: 3,
-  },
-  {
-    id: "4",
-    name: "Phạm Thị D",
-    email: "phamd@email.com",
-    avatar: null,
-    role: "ADMIN",
-    status: "ACTIVE",
-    createdAt: "2024-01-01",
-    playlists: 25,
-  },
-  {
-    id: "5",
-    name: "Hoàng Văn E",
-    email: "hoange@email.com",
-    avatar: null,
-    role: "USER",
-    status: "PENDING",
-    createdAt: "2024-04-05",
-    playlists: 0,
-  },
-];
-
 export default function UsersPage() {
-  const [users] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm();
+  const [debouncedSearch] = useDebounce(searchText, 500);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await adminService.getAllUsers(
+        pagination.current,
+        pagination.pageSize,
+        debouncedSearch || undefined
+      );
+      setUsers(response.data.data);
+      setPagination((prev) => ({
+        ...prev,
+        total: response.data.pagination.total,
+      }));
+    } catch (error: any) {
+      console.error("Failed to fetch users:", error);
+      message.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.current, pagination.pageSize, debouncedSearch]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleDeleteUser = async (user: AdminUser) => {
+    Modal.confirm({
+      title: "Delete User",
+      content: `Are you sure you want to delete "${
+        user.name || user.email
+      }"? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          await adminService.deleteUser(user.id);
+          message.success("User deleted successfully");
+          fetchUsers();
+        } catch (error) {
+          message.error("Failed to delete user");
+        }
+      },
+    });
+  };
+
+  const handleChangeRole = async (user: AdminUser, newRole: string) => {
+    try {
+      await adminService.updateUserRole(user.id, newRole);
+      message.success("Role updated successfully");
+      fetchUsers();
+    } catch (error) {
+      message.error("Failed to update role");
+    }
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "red";
+        return "gold";
       case "ARTIST":
         return "purple";
       default:
-        return "blue";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
         return "green";
-      case "BANNED":
-        return "red";
-      default:
-        return "orange";
     }
   };
 
-  const columns: ColumnsType<User> = [
+  const columns: ColumnsType<AdminUser> = [
+    {
+      title: "#",
+      key: "index",
+      width: 50,
+      render: (_, __, index) => (
+        <span style={{ color: "#b3b3b3" }}>
+          {(pagination.current - 1) * pagination.pageSize + index + 1}
+        </span>
+      ),
+    },
     {
       title: "User",
       key: "user",
@@ -129,12 +122,14 @@ export default function UsersPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Avatar
             size={40}
-            src={record.avatar}
+            src={record.avatar_url}
             icon={<UserOutlined />}
             style={{ backgroundColor: "#1db954" }}
           />
           <div>
-            <div style={{ fontWeight: 500 }}>{record.name}</div>
+            <div style={{ fontWeight: 500, color: "#fff" }}>
+              {record.name || record.username || "No name"}
+            </div>
             <div style={{ color: "#b3b3b3", fontSize: 12 }}>{record.email}</div>
           </div>
         </div>
@@ -144,30 +139,26 @@ export default function UsersPage() {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (role) => <Tag color={getRoleColor(role)}>{role}</Tag>,
-      filters: [
-        { text: "Admin", value: "ADMIN" },
-        { text: "Artist", value: "ARTIST" },
-        { text: "User", value: "USER" },
-      ],
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => <Tag color={getStatusColor(status)}>{status}</Tag>,
-    },
-    {
-      title: "Playlists",
-      dataIndex: "playlists",
-      key: "playlists",
-      sorter: (a, b) => a.playlists - b.playlists,
+      width: 120,
+      render: (role: string) => (
+        <Tag
+          color={getRoleColor(role)}
+          icon={role === "ADMIN" ? <CrownOutlined /> : undefined}
+        >
+          {role}
+        </Tag>
+      ),
     },
     {
       title: "Joined",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => new Date(date).toLocaleDateString("vi-VN"),
+      dataIndex: "created_at",
+      key: "created_at",
+      width: 120,
+      render: (date: string) => (
+        <span style={{ color: "#b3b3b3" }}>
+          {new Date(date).toLocaleDateString()}
+        </span>
+      ),
     },
     {
       title: "Actions",
@@ -177,64 +168,48 @@ export default function UsersPage() {
         <Dropdown
           menu={{
             items: [
-              { key: "edit", icon: <EditOutlined />, label: "Edit" },
-              { key: "email", icon: <MailOutlined />, label: "Send Email" },
               {
-                key: "ban",
-                icon: <LockOutlined />,
-                label: record.status === "BANNED" ? "Unban" : "Ban",
+                key: "role",
+                label: "Change Role",
+                icon: <EditOutlined />,
+                children: [
+                  {
+                    key: "USER",
+                    label: "User",
+                    onClick: () => handleChangeRole(record, "USER"),
+                    disabled: record.role === "USER",
+                  },
+                  {
+                    key: "ARTIST",
+                    label: "Artist",
+                    onClick: () => handleChangeRole(record, "ARTIST"),
+                    disabled: record.role === "ARTIST",
+                  },
+                  {
+                    key: "ADMIN",
+                    label: "Admin",
+                    onClick: () => handleChangeRole(record, "ADMIN"),
+                    disabled: record.role === "ADMIN",
+                  },
+                ],
               },
               { type: "divider" },
               {
                 key: "delete",
-                icon: <DeleteOutlined />,
                 label: "Delete",
+                icon: <DeleteOutlined />,
                 danger: true,
+                onClick: () => handleDeleteUser(record),
               },
             ],
-            onClick: ({ key }) => handleAction(key, record),
           }}
           trigger={["click"]}
         >
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            style={{ color: "#b3b3b3" }}
-          />
+          <Button type="text" icon={<MoreOutlined />} />
         </Dropdown>
       ),
     },
   ];
-
-  const handleAction = (action: string, user: User) => {
-    switch (action) {
-      case "edit":
-        message.info(`Edit user: ${user.name}`);
-        break;
-      case "ban":
-        message.warning(
-          `${user.status === "BANNED" ? "Unbanned" : "Banned"} user: ${
-            user.name
-          }`
-        );
-        break;
-      case "delete":
-        Modal.confirm({
-          title: "Delete User",
-          content: `Are you sure you want to delete ${user.name}?`,
-          okText: "Delete",
-          okType: "danger",
-          onOk: () => message.success(`Deleted user: ${user.name}`),
-        });
-        break;
-    }
-  };
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
     <div className={styles.container}>
@@ -242,37 +217,29 @@ export default function UsersPage() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Users Management</h1>
-          <p className={styles.subtitle}>Manage all users on your platform</p>
+          <p className={styles.subtitle}>Manage all users on the platform</p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalOpen(true)}
-          style={{
-            background: "#1db954",
-            borderColor: "#1db954",
-            borderRadius: 20,
-          }}
-        >
-          Add User
-        </Button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={fetchUsers}
+            style={{ borderRadius: 20 }}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <Card className={styles.contentCard} style={{ marginBottom: 20 }}>
-        <div style={{ padding: 16 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <Input
-            placeholder="Search users by name or email..."
+            placeholder="Search by name or email..."
             prefix={<SearchOutlined style={{ color: "#b3b3b3" }} />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              color: "#fff",
-              borderRadius: 8,
-              maxWidth: 400,
-            }}
+            style={{ maxWidth: 400 }}
+            allowClear
           />
         </div>
       </Card>
@@ -280,54 +247,27 @@ export default function UsersPage() {
       {/* Table */}
       <Card className={styles.contentCard}>
         <Table
-          dataSource={filteredUsers}
           columns={columns}
+          dataSource={users}
           rowKey="id"
-          className={styles.table}
+          loading={loading}
           pagination={{
-            pageSize: 10,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} users`,
+            onChange: (page, pageSize) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: page,
+                pageSize: pageSize || 10,
+              }));
+            },
           }}
+          className={styles.table}
         />
       </Card>
-
-      {/* Create Modal */}
-      <Modal
-        title="Add New User"
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        onOk={() => {
-          form.validateFields().then(() => {
-            message.success("User created successfully!");
-            setIsModalOpen(false);
-            form.resetFields();
-          });
-        }}
-        okButtonProps={{
-          style: { background: "#1db954", borderColor: "#1db954" },
-        }}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-            <Input placeholder="Enter user name" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[{ required: true, type: "email" }]}
-          >
-            <Input placeholder="Enter email address" />
-          </Form.Item>
-          <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-            <Select placeholder="Select role">
-              <Select.Option value="USER">User</Select.Option>
-              <Select.Option value="ARTIST">Artist</Select.Option>
-              <Select.Option value="ADMIN">Admin</Select.Option>
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   );
 }

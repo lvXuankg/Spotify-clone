@@ -105,8 +105,8 @@ const PlaylistDetailPage = memo(() => {
       title: playlist?.title || "Playlist",
       cover_url: playlist?.cover_url || undefined,
       artists: {
-        id: song.artists?.[0]?.id || "",
-        display_name: song.artists?.map((a) => a.display_name).join(", ") || "",
+        id: song.artist?.id || "",
+        display_name: song.artist?.display_name || "Unknown Artist",
       },
     },
   });
@@ -255,7 +255,7 @@ const PlaylistDetailPage = memo(() => {
         <div className={styles.trackInfo}>
           <span className={styles.trackTitle}>{record.title}</span>
           <span className={styles.trackArtist}>
-            {record.artists?.map((a) => a.display_name).join(", ")}
+            {record.artist?.display_name || "Unknown Artist"}
           </span>
         </div>
       ),

@@ -30,6 +30,14 @@ export class SongService {
     return sendMicroserviceRequest(this.client, 'song.findAll', { albumId });
   }
 
+  async getAllSongs(page?: number, limit?: number, search?: string) {
+    return sendMicroserviceRequest(this.client, 'song.getAllSongs', {
+      page,
+      limit,
+      search,
+    });
+  }
+
   async getSong(songId: string) {
     return sendMicroserviceRequest(this.client, 'song.findOne', { id: songId });
   }

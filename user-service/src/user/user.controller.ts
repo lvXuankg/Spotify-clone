@@ -9,6 +9,36 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /**
+   * Get all users (Admin only)
+   */
+  @MessagePattern(USER_MESSAGE_PATTERNS.GET_ALL_USERS)
+  async getAllUsers(
+    @Payload() payload: { page?: number; limit?: number; search?: string },
+  ) {
+    return this.userService.getAllUsers(
+      payload.page,
+      payload.limit,
+      payload.search,
+    );
+  }
+
+  /**
+   * Delete user (Admin only)
+   */
+  @MessagePattern(USER_MESSAGE_PATTERNS.DELETE_USER)
+  async deleteUser(@Payload() payload: { userId: string }) {
+    return this.userService.deleteUser(payload.userId);
+  }
+
+  /**
+   * Update user role (Admin only)
+   */
+  @MessagePattern(USER_MESSAGE_PATTERNS.UPDATE_USER_ROLE)
+  async updateUserRole(@Payload() payload: { userId: string; role: string }) {
+    return this.userService.updateUserRole(payload.userId, payload.role);
+  }
+
+  /**
    * Lấy thông tin profile người dùng
    */
   @MessagePattern(USER_MESSAGE_PATTERNS.GET_PROFILE)

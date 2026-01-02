@@ -14,13 +14,15 @@ import { SongModule } from './song/song.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { StreamModule } from './stream/stream.module';
 import { SearchModule } from './search/search.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, //
+      isGlobal: true,
       envFilePath: '.env',
     }),
+    RedisModule,
     MicroserviceClientsModule,
     AuthModule,
     LoggerModule,

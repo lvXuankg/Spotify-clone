@@ -1,158 +1,11 @@
 version: '3.8'
 
 services:
-  # Elasticsearch for search functionality
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: spotify-elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
 
-  # Kibana for Elasticsearch UI (optional but useful)
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: spotify-kibana
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    networks:
-      - spotify-network
-
-  # PostgreSQL for Prisma databases
-  postgres-artist:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-artist
-    environment:
-      POSTGRES_DB: artist_db
-      POSTGRES_USER: artist
-      POSTGRES_PASSWORD: artist123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_artist_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U artist"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-song:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-song
-    environment:
-      POSTGRES_DB: song_db
-      POSTGRES_USER: song
-      POSTGRES_PASSWORD: song123
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_song_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U song"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-album:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-album
-    environment:
-      POSTGRES_DB: album_db
-      POSTGRES_USER: album
-      POSTGRES_PASSWORD: album123
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres_album_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U album"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-playlist:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-playlist
-    environment:
-      POSTGRES_DB: playlist_db
-      POSTGRES_USER: playlist
-      POSTGRES_PASSWORD: playlist123
-    ports:
-      - "5435:5432"
-    volumes:
-      - postgres_playlist_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U playlist"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-library:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-library
-    environment:
-      POSTGRES_DB: library_db
-      POSTGRES_USER: library
-      POSTGRES_PASSWORD: library123
-    ports:
-      - "5436:5432"
-    volumes:
-      - postgres_library_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U library"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-stream:
-    image: postgres:17-alpine
-    container_name: spotify-postgres-stream
-    environment:
-      POSTGRES_DB: stream_db
-      POSTGRES_USER: stream
-      POSTGRES_PASSWORD: stream123
-    ports:
-      - "5437:5432"
-    volumes:
-      - postgres_stream_data:/var/lib/postgresql/data
-    networks:
-      - spotify-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stream"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # RabbitMQ for message queue
+  # RabbitMQ - Message Queue
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: spotify-rabbitmq
@@ -160,7 +13,7 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: 1234
     ports:
-      - "5672:5672"    # AMQP port
+      - "5672:5672"    # AMQP protocol
       - "15672:15672"  # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -171,8 +24,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-  # Redis for caching
+  # Redis - Caching Layer
   redis:
     image: redis:7-alpine
     container_name: spotify-redis
@@ -188,17 +42,54 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # Elasticsearch - Full-text Search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: spotify-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - spotify-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Kibana - Elasticsearch UI (Optional - for development)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: spotify-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    profiles:
+      - dev
+    restart: unless-stopped
 
 volumes:
-  elasticsearch_data:
-  postgres_artist_data:
-  postgres_song_data:
-  postgres_album_data:
-  postgres_playlist_data:
-  postgres_library_data:
-  postgres_stream_data:
   rabbitmq_data:
+    driver: local
   redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
 
 networks:
   spotify-network:

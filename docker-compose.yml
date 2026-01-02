@@ -38,10 +38,11 @@ services:
     networks:
       - spotify-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "ping", "|", "grep", "PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
     restart: unless-stopped
 
   # Elasticsearch - Full-text Search

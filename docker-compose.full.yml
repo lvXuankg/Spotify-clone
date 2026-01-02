@@ -1,0 +1,355 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: spotify-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - spotify-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: spotify-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - spotify-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: spotify-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - spotify-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================
+  # MICROSERVICES
+  # ===========================================
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: spotify-auth-service
+    environment:
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - DIRECT_URL=${AUTH_DIRECT_URL}
+      - HEALTH_CHECK_PORT=3001
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=auth_queue
+      - RABBITMQ_OPTION_DURABLE=true
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: spotify-user-service
+    environment:
+      - DATABASE_URL=${USER_DATABASE_URL}
+      - DIRECT_URL=${USER_DIRECT_URL}
+      - HEALTH_CHECK_PORT=3002
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=user_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  file-service:
+    build:
+      context: ./file-service
+      dockerfile: Dockerfile
+    container_name: spotify-file-service
+    environment:
+      - DATABASE_URL=${FILE_DATABASE_URL}
+      - DIRECT_URL=${FILE_DIRECT_URL}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - HEALTH_CHECK_PORT=3004
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=file_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  artist-service:
+    build:
+      context: ./artist-service
+      dockerfile: Dockerfile
+    container_name: spotify-artist-service
+    environment:
+      - DATABASE_URL=${ARTIST_DATABASE_URL}
+      - DIRECT_URL=${ARTIST_DIRECT_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=artist_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  album-service:
+    build:
+      context: ./album-service
+      dockerfile: Dockerfile
+    container_name: spotify-album-service
+    environment:
+      - DATABASE_URL=${ALBUM_DATABASE_URL}
+      - DIRECT_URL=${ALBUM_DIRECT_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=album_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  song-service:
+    build:
+      context: ./song-service
+      dockerfile: Dockerfile
+    container_name: spotify-song-service
+    environment:
+      - DATABASE_URL=${SONG_DATABASE_URL}
+      - DIRECT_URL=${SONG_DIRECT_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=song_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  playlist-service:
+    build:
+      context: ./playlist-service
+      dockerfile: Dockerfile
+    container_name: spotify-playlist-service
+    environment:
+      - DATABASE_URL=${PLAYLIST_DATABASE_URL}
+      - DIRECT_URL=${PLAYLIST_DIRECT_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=playlist_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  library-service:
+    build:
+      context: ./library-service
+      dockerfile: Dockerfile
+    container_name: spotify-library-service
+    environment:
+      - DATABASE_URL=${LIBRARY_DATABASE_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=library_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  stream-service:
+    build:
+      context: ./stream-service
+      dockerfile: Dockerfile
+    container_name: spotify-stream-service
+    environment:
+      - DATABASE_URL=${STREAM_DATABASE_URL}
+      - DIRECT_URL=${STREAM_DIRECT_URL}
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=stream_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: ./search-service
+      dockerfile: Dockerfile
+    container_name: spotify-search-service
+    environment:
+      - DATABASE_URL=${SEARCH_DATABASE_URL}
+      - DIRECT_URL=${SEARCH_DIRECT_URL}
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - RABBITMQ_QUEUE=search_queue
+      - RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  # ===========================================
+  # API GATEWAY
+  # ===========================================
+
+  api-gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    container_name: spotify-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - AUTH_SERVICE_RABBITMQ_QUEUE=auth_queue
+      - AUTH_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - USER_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - USER_SERVICE_RABBITMQ_QUEUE=user_queue
+      - USER_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - FILE_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - FILE_SERVICE_RABBITMQ_QUEUE=file_queue
+      - FILE_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - ARTIST_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - ARTIST_SERVICE_RABBITMQ_QUEUE=artist_queue
+      - ARTIST_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - ALBUM_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - ALBUM_SERVICE_RABBITMQ_QUEUE=album_queue
+      - ALBUM_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - SONG_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - SONG_SERVICE_RABBITMQ_QUEUE=song_queue
+      - SONG_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - PLAYLIST_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - PLAYLIST_SERVICE_RABBITMQ_QUEUE=playlist_queue
+      - PLAYLIST_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - STREAM_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - STREAM_SERVICE_RABBITMQ_QUEUE=stream_queue
+      - STREAM_SERVICE_RABBITMQ_OPTION_DURABLE=true
+      - SEARCH_SERVICE_RABBITMQ_URL=amqp://admin:1234@rabbitmq:5672
+      - SEARCH_SERVICE_RABBITMQ_QUEUE=search_queue
+      - SEARCH_SERVICE_RABBITMQ_OPTION_DURABLE=true
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      file-service:
+        condition: service_started
+      artist-service:
+        condition: service_started
+      album-service:
+        condition: service_started
+      song-service:
+        condition: service_started
+      playlist-service:
+        condition: service_started
+      stream-service:
+        condition: service_started
+      search-service:
+        condition: service_started
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+  # ===========================================
+  # FRONTEND
+  # ===========================================
+
+  frontend:
+    build:
+      context: ./frontend-spotify
+      dockerfile: Dockerfile
+    container_name: spotify-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api-gateway:8080/api
+    depends_on:
+      - api-gateway
+    networks:
+      - spotify-network
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  spotify-network:
+    driver: bridge

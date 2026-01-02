@@ -4,6 +4,7 @@ import { timeout, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ServiceHealthDto, OverallHealthDto } from './dto/service-health.dto';
 import { LoggerService } from '../common/logger/logger.service';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class HealthService {
@@ -18,6 +19,7 @@ export class HealthService {
     @Inject('STREAM_SERVICE') private streamServiceClient: ClientProxy,
     @Inject('SEARCH_SERVICE') private searchServiceClient: ClientProxy,
     private readonly logger: LoggerService,
+    private readonly redisService: RedisService,
   ) {}
 
   /**
@@ -61,6 +63,48 @@ export class HealthService {
         service: serviceName,
         status: 'down',
         message: error.message || 'Service is unavailable',
+        responseTime,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Check Redis health
+   */
+  private async checkRedisHealth(): Promise<ServiceHealthDto> {
+    const startTime = Date.now();
+
+    try {
+      const isConnected = this.redisService.isReady();
+      const responseTime = Date.now() - startTime;
+
+      if (isConnected) {
+        return {
+          service: 'Redis',
+          status: 'up',
+          message: 'Redis is connected',
+          responseTime,
+          timestamp: new Date().toISOString(),
+        };
+      } else {
+        return {
+          service: 'Redis',
+          status: 'down',
+          message: 'Redis is not connected',
+          responseTime,
+          timestamp: new Date().toISOString(),
+        };
+      }
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+
+      this.logger.error(`Redis health check failed: ${error.message}`);
+
+      return {
+        service: 'Redis',
+        status: 'down',
+        message: error.message || 'Redis is unavailable',
         responseTime,
         timestamp: new Date().toISOString(),
       };
@@ -135,6 +179,10 @@ export class HealthService {
       this.searchServiceClient,
     );
     services.push(searchServiceHealth);
+
+    // Check Redis
+    const redisHealth = await this.checkRedisHealth();
+    services.push(redisHealth);
 
     // Determine overall status
     const allHealthy = services.every((s) => s.status === 'up');

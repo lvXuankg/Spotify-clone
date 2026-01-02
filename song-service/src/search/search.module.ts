@@ -12,7 +12,7 @@ import { SearchClient } from './search.client';
           urls: [
             process.env.RABBITMQ_URL || 'amqp://admin:1234@localhost:5672',
           ],
-          queue: 'search-queue',
+          queue: 'search_queue',
           queueOptions: { durable: true },
         },
       },

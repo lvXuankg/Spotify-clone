@@ -27,12 +27,23 @@ export class SongService {
   }
 
   async updateSong(songId: string, dto: UpdateSongDto) {
+    // Get song first to know albumId for cache invalidation
+    const song = await sendMicroserviceRequest(this.client, 'song.findOne', {
+      id: songId,
+    });
+
     const result = await sendMicroserviceRequest(this.client, 'song.update', {
       id: songId,
       ...dto,
     });
+
+    // Invalidate caches
     await this.redis.del(CACHE_KEYS.SONG(songId));
     await this.redis.delByPattern(CACHE_PATTERNS.ALL_SONGS);
+    // Also invalidate album songs cache
+    if (song?.album_id) {
+      await this.redis.del(CACHE_KEYS.ALBUM_SONGS(song.album_id));
+    }
     return result;
   }
 
@@ -117,6 +128,10 @@ export class SongService {
     // Invalidate caches
     await this.redis.del(CACHE_KEYS.SONG(songId));
     await this.redis.delByPattern(CACHE_PATTERNS.ALL_SONGS);
+    // Also invalidate album songs cache if song has albumId
+    if (song.album_id) {
+      await this.redis.del(CACHE_KEYS.ALBUM_SONGS(song.album_id));
+    }
 
     return deletedSong;
   }

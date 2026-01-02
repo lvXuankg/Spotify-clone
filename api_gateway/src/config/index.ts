@@ -81,7 +81,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.AUTH_SERVICE_RABBITMQ_QUEUE || 'auth_queue',
-    durable: process.env.AUTH_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.AUTH_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   userService: {
     urls: [
@@ -89,7 +89,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.USER_SERVICE_RABBITMQ_QUEUE || 'auth_queue',
-    durable: process.env.USER_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.USER_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   fileService: {
     urls: [
@@ -97,7 +97,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.FILE_SERVICE_RABBITMQ_QUEUE || 'file_queue',
-    durable: process.env.FILE_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.FILE_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   artistService: {
     urls: [
@@ -105,7 +105,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.ARTIST_SERVICE_RABBITMQ_QUEUE || 'artist_queue',
-    durable: process.env.ARTIST_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.ARTIST_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   albumService: {
     urls: [
@@ -113,7 +113,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.ALBUM_SERVICE_RABBITMQ_QUEUE || 'album_queue',
-    durable: process.env.ALBUM_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.ALBUM_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   songService: {
     urls: [
@@ -121,7 +121,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.SONG_SERVICE_RABBITMQ_QUEUE || 'song_queue',
-    durable: process.env.SONG_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.SONG_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   playlistService: {
     urls: [
@@ -129,7 +129,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.PLAYLIST_SERVICE_RABBITMQ_QUEUE || 'playlist_queue',
-    durable: process.env.PLAYLIST_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.PLAYLIST_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   streamService: {
     urls: [
@@ -137,7 +137,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.STREAM_SERVICE_RABBITMQ_QUEUE || 'stream_queue',
-    durable: process.env.STREAM_SERVICE_RABBITMQ_OPTION_DURABLE === 'true',
+    durable: process.env.STREAM_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   searchService: {
     urls: [
@@ -145,7 +145,7 @@ export const getConfig = (): AppConfig => ({
         'amqp://admin:1234@localhost:5672',
     ],
     queue: process.env.SEARCH_SERVICE_RABBITMQ_QUEUE || 'search_queue',
-    durable: process.env.SEARCH_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false',
+    durable: process.env.SEARCH_SERVICE_RABBITMQ_OPTION_DURABLE !== 'false', // default true
   },
   http: {
     port: parseInt(process.env.PORT || '8080', 10),
